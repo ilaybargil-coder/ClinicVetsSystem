@@ -1,179 +1,409 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="ClinicVetsSystem.MainMenuWindow"
-        Title="ClinicVets"
-        Width="480" Height="560"
+        xmlns:local="using:ClinicVetsSystem"
+        xmlns:clinicVetSystem="clr-namespace:ClinicVetSystem"
+        x:Class="ClinicVetSystem.MainMenuWindow"
+        Title="ClinicVetsSystem - Staff Dashboard"
+        Width="1400" Height="900"
+        MinWidth="1100" MinHeight="700"
         WindowStartupLocation="CenterScreen"
-        Background="#111827"
-        CanResize="False">
+        Background="#f7f9fb"
+        FontFamily="Inter, sans-serif"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1">
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Window.Styles>
+        <Style Selector="Button.chromeBtn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#6c7a71"/>
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.chromeBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#e0e3e5"/>
+            <Setter Property="Foreground" Value="#191c1e"/>
+        </Style>
 
-        <!-- ══ HEADER BAR ══════════════════════════════════════════════════ -->
-        <Border Grid.Row="0" Background="#1F2937"
-                BorderBrush="#374151" BorderThickness="0,0,0,1"
-                Padding="24,18">
-            <StackPanel Spacing="2">
-                <TextBlock Text="ClinicVets"
-                           FontSize="28" FontWeight="Bold"
-                           Foreground="#6366F1"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="מערכת ניהול מרפאה וטרינרית"
-                           FontSize="12" Foreground="#6B7280"
-                           HorizontalAlignment="Center"/>
-            </StackPanel>
+        <Style Selector="Button.navBtn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#64748b"/>
+            <Setter Property="Padding" Value="24,16"/>
+            <Setter Property="CornerRadius" Value="0,32,32,0"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.navBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#ecfdf5"/>
+            <Setter Property="Foreground" Value="#059669"/>
+        </Style>
+        <Style Selector="Button.navBtn.active /template/ ContentPresenter">
+            <Setter Property="Background" Value="#d1fae5"/>
+            <Setter Property="Foreground" Value="#047857"/>
+        </Style>
+
+        <Style Selector="Border.glassCard">
+            <Setter Property="Background" Value="#ffffff"/>
+            <Setter Property="CornerRadius" Value="32"/>
+            <Setter Property="BoxShadow" Value="0 10 30 0 #08005236"/>
+        </Style>
+
+        <Style Selector="Button.primaryAction">
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions><TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2"/></Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.primaryAction:pointerover">
+            <Setter Property="RenderTransform" Value="scale(0.98)"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid ColumnDefinitions="280, *">
+        
+        <Border Grid.Column="0" BorderBrush="#eef2f6" BorderThickness="0,0,1,0" ZIndex="10">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Offset="0" Color="#ffffff"/>
+                    <GradientStop Offset="1" Color="#f0fdf4"/>
+                </LinearGradientBrush>
+            </Border.Background>
+
+            <Grid RowDefinitions="Auto, *, Auto">
+                <StackPanel Grid.Row="0" Margin="32,40,24,32" Spacing="4">
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <Border Background="#006c49" CornerRadius="12" Width="40" Height="40" BoxShadow="0 4 12 0 #33006c49">
+                            <TextBlock Text="🐾" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20"/>
+                        </Border>
+                        <TextBlock Text="ClinicVetsSystem" FontSize="18" FontWeight="Bold" Foreground="#0f172a" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <TextBlock Text="Nature's Vitality Care" FontSize="12" FontWeight="Medium" Foreground="#64748b" Margin="52,0,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" Spacing="4" Margin="0,0,24,0">
+                    <Button Name="btnNavDashboard" Classes="navBtn active" Click="btnNavDashboard_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <PathIcon Data="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" Width="20" Height="20"/>
+                            <TextBlock Text="DASHBOARD" FontWeight="Bold" FontSize="13" LetterSpacing="1" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Name="btnNavCustomers" Classes="navBtn" Click="btnNavCustomers_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <PathIcon Data="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" Width="20" Height="20"/>
+                            <TextBlock Text="CUSTOMERS" FontWeight="Bold" FontSize="13" LetterSpacing="1" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Name="btnNavPets" Classes="navBtn" Click="btnPets_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <PathIcon Data="M12,2A2,2 0 0,1 14,4A2,2 0 0,1 12,6A2,2 0 0,1 10,4A2,2 0 0,1 12,2M16,5A2,2 0 0,1 18,7A2,2 0 0,1 16,9A2,2 0 0,1 14,7A2,2 0 0,1 16,5M8,5A2,2 0 0,1 10,7A2,2 0 0,1 8,9A2,2 0 0,1 6,7A2,2 0 0,1 8,5M19.14,12.5C18.66,13.63 17.66,14.5 16.5,15C16.5,16.5 16.5,18.5 15,20C13.5,21.5 12,22 12,22C12,22 10.5,21.5 9,20C7.5,18.5 7.5,16.5 7.5,15C6.34,14.5 5.34,13.63 4.86,12.5C4,10.5 4.5,8 5.5,8C6.5,8 7,9 8,10C9,11 10.5,11.5 12,11.5C13.5,11.5 15,11 16,10C17,9 17.5,8 18.5,8C19.5,8 20,10.5 19.14,12.5Z" Width="20" Height="20"/>
+                            <TextBlock Text="PETS" FontWeight="Bold" FontSize="13" LetterSpacing="1" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Name="btnNavVisits" Classes="navBtn" Click="btnVisits_Click">
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <PathIcon Data="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" Width="20" Height="20"/>
+                            <TextBlock Text="VISITS" FontWeight="Bold" FontSize="13" LetterSpacing="1" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="navBtn">
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <PathIcon Data="M20 2H4c-1.1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-.9-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z" Width="20" Height="20"/>
+                            <TextBlock Text="INVENTORY" FontWeight="Bold" FontSize="13" LetterSpacing="1" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <StackPanel Grid.Row="2" Margin="24,0,24,32" Spacing="32">
+                    <Border CornerRadius="16" BoxShadow="0 8 20 0 #2010b981">
+                        <Button Classes="primaryAction" Height="56" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                            <Button.Background>
+                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                    <GradientStop Offset="0" Color="#006c49"/>
+                                    <GradientStop Offset="1" Color="#10b981"/>
+                                </LinearGradientBrush>
+                            </Button.Background>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <PathIcon Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" Width="20" Height="20" Foreground="White"/>
+                                <TextBlock Text="New Appointment" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </Border>
+                    
+                    <StackPanel Spacing="4">
+                        <Button Name="btnLogout" Background="Transparent" Foreground="#64748b" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="12" Click="btnLogout_Click">
+                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                <PathIcon Data="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" Width="20" Height="20"/>
+                                <TextBlock Text="LOGOUT" FontWeight="Bold" FontSize="13"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <!-- ══ CONTENT ═════════════════════════════════════════════════════ -->
-        <ScrollViewer Grid.Row="1" Padding="24,20">
-            <StackPanel Spacing="12">
+        <Grid Grid.Column="1" RowDefinitions="Auto, *">
+            <Grid Grid.Row="0" Height="40" Background="Transparent" PointerPressed="TitleBar_PointerPressed" ZIndex="20">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,16,0" Spacing="8">
+                    <Button Classes="chromeBtn" Click="Minimize_Click"><PathIcon Data="M20,14H4V10H20" Width="10" Height="10"/></Button>
+                    <Button Classes="chromeBtn" Click="Maximize_Click"><PathIcon Data="M4,4H20V20H4V4M6,8V18H18V8H6Z" Width="10" Height="10"/></Button>
+                    <Button Classes="chromeBtn" Click="Close_Click"><PathIcon Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Width="10" Height="10"/></Button>
+                </StackPanel>
+            </Grid>
 
-                <!-- כרטיס ברוך הבא -->
-                <Border Background="#1F2937" CornerRadius="12"
-                        BorderBrush="#374151" BorderThickness="1"
-                        Padding="20,16">
-                    <Grid ColumnDefinitions="Auto,*">
-                        <Border Grid.Column="0"
-                                Background="#312E81"
-                                CornerRadius="50"
-                                Width="46" Height="46"
-                                Margin="0,0,14,0">
-                            <TextBlock Text="👤" FontSize="22"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                            <TextBlock Name="lblWelcome"
-                                       FontSize="15" FontWeight="SemiBold"
-                                       Foreground="White"/>
-                            <Border Background="#312E81" CornerRadius="4"
-                                    Padding="8,2" HorizontalAlignment="Left">
-                                <TextBlock Name="lblRole"
-                                           FontSize="11" FontWeight="SemiBold"
-                                           Foreground="#A5B4FC"/>
+            <ScrollViewer Name="DashboardPanel" Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="48,16,48,48" Spacing="32">
+                    
+                    <Grid ColumnDefinitions="*, Auto">
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Name="lblGreeting" Text="Morning, Staff" FontSize="32" FontWeight="Black" Foreground="#191c1e" LetterSpacing="-0.5" Margin="0,0,0,4"/>
+                            <TextBlock Text="Today is Monday, Oct 23 — 12 pending visits." FontSize="15" FontWeight="Medium" Foreground="#3c4a42"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="24" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Border Classes="glassCard" Width="48" Height="48" CornerRadius="24">
+                                    <PathIcon Data="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z" Width="20" Height="20" Foreground="#64748b"/>
+                                </Border>
+                                <Border Classes="glassCard" Width="48" Height="48" CornerRadius="24">
+                                    <PathIcon Data="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .43-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.49-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" Width="20" Height="20" Foreground="#64748b"/>
+                                </Border>
+                            </StackPanel>
+                            
+                            <StackPanel Orientation="Horizontal" Spacing="16" Margin="16,0,0,0">
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Name="lblTopName" Text="Dr. Sarah Miller" FontSize="14" FontWeight="Bold" Foreground="#191c1e" HorizontalAlignment="Right"/>
+                                    <TextBlock Name="lblTopRole" Text="CHIEF VETERINARIAN" FontSize="10" FontWeight="Black" Foreground="#64748b" LetterSpacing="1" HorizontalAlignment="Right"/>
+                                </StackPanel>
+                                <Border Width="48" Height="48" CornerRadius="24" Background="#1e293b" BorderBrush="White" BorderThickness="2" BoxShadow="0 4 12 0 #20000000">
+                                    <TextBlock Text="👩‍⚕️" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24"/>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                        <StackPanel Orientation="Horizontal" Spacing="24">
+                            <Border Classes="glassCard" Padding="24" Width="260" Background="#ffffff">
+                                <StackPanel>
+                                    <Border Background="#82f5c1" Width="48" Height="48" CornerRadius="16" HorizontalAlignment="Left" Margin="0,0,0,16">
+                                        <PathIcon Data="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 14H9v-2H7v-2h2v-2h2v2h2v2h-2v2zm4-10H5V5h14v2z" Width="24" Height="24" Foreground="#00714e"/>
+                                    </Border>
+                                    <TextBlock Text="Emergency Admission" FontSize="16" FontWeight="Bold" Foreground="#191c1e"/>
+                                    <TextBlock Text="Direct check-in for urgent cases" FontSize="12" Foreground="#64748b" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            
+                            <Border Classes="glassCard" Padding="24" Width="260" Background="#ffffff">
+                                <StackPanel>
+                                    <Border Background="#f1f5f9" Width="48" Height="48" CornerRadius="16" HorizontalAlignment="Left" Margin="0,0,0,16">
+                                        <PathIcon Data="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" Width="24" Height="24" Foreground="#334155"/>
+                                    </Border>
+                                    <TextBlock Text="Quick Lab Results" FontSize="16" FontWeight="Bold" Foreground="#191c1e"/>
+                                    <TextBlock Text="Review 8 pending blood panels" FontSize="12" Foreground="#64748b" Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Classes="glassCard" Padding="24" Width="260" Background="#ffffff">
+                                <StackPanel>
+                                    <Border Background="#6ffbbe" Width="48" Height="48" CornerRadius="16" HorizontalAlignment="Left" Margin="0,0,0,16">
+                                        <PathIcon Data="M18 4h-3V2h-6v2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM8 4h8v2H8V4zm6 14h-4v-2h4v2zm2-4H8v-2h8v2z" Width="24" Height="24" Foreground="#002113"/>
+                                    </Border>
+                                    <TextBlock Text="Pharmacy Restock" FontSize="16" FontWeight="Bold" Foreground="#191c1e"/>
+                                    <TextBlock Text="Update inventory for vaccines" FontSize="12" Foreground="#64748b" Margin="0,4,0,0"/>
+                                </StackPanel>
                             </Border>
                         </StackPanel>
-                    </Grid>
-                </Border>
+                    </ScrollViewer>
 
-                <!-- ──── כותרת ────────────────────────────────────────── -->
-                <TextBlock Text="פעולות מהירות"
-                           FontSize="11" FontWeight="SemiBold"
-                           Foreground="#6B7280"
-                           Margin="2,8,0,0"/>
+                    <Grid ColumnDefinitions="2*, 1*" >
+                        
+                        <StackPanel Grid.Column="0" Margin="0,0,40,0" Spacing="24">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Grid.Column="0" Text="Today's Appointments" FontSize="20" FontWeight="Bold" Foreground="#191c1e"/>
+                                <TextBlock Grid.Column="1" Text="View Full Calendar" FontSize="14" FontWeight="Bold" Foreground="#006c49" Cursor="Hand" VerticalAlignment="Center"/>
+                            </Grid>
 
-                <!-- ─── כפתור לקוחות (מזכיר/ה בלבד) ────────────────── -->
-                <Button Name="btnCustomers"
-                        Height="64"
-                        HorizontalAlignment="Stretch"
-                        Background="#1E3A5F"
-                        CornerRadius="12"
-                        BorderBrush="#2563EB" BorderThickness="1"
-                        IsVisible="False"
-                        Click="btnCustomers_Click">
-                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="16,0">
-                        <Border Grid.Column="0"
-                                Background="#1D4ED8" CornerRadius="8"
-                                Width="38" Height="38">
-                            <TextBlock Text="👥" FontSize="18"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="14,0,0,0"
-                                    VerticalAlignment="Center" Spacing="2">
-                            <TextBlock Text="ניהול לקוחות"
-                                       FontSize="15" FontWeight="SemiBold"
-                                       Foreground="White"/>
-                            <TextBlock Text="הוספה, עריכה וחיפוש בעלי חיות"
-                                       FontSize="11" Foreground="#93C5FD"/>
+                            <StackPanel Spacing="16">
+                                <Border Classes="glassCard" Padding="24">
+                                    <Grid ColumnDefinitions="Auto, Auto, *, Auto">
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                                            <TextBlock Text="09:30" FontSize="24" FontWeight="Black" Foreground="#191c1e" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="AM" FontSize="10" FontWeight="Bold" Foreground="#94a3b8" HorizontalAlignment="Center" LetterSpacing="1"/>
+                                        </StackPanel>
+                                        <Border Grid.Column="1" Width="56" Height="56" CornerRadius="28" Background="#f1f5f9" Margin="0,0,24,0">
+                                            <TextBlock Text="🐕" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Cooper" FontSize="18" FontWeight="Bold" Foreground="#191c1e"/>
+                                                <TextBlock Text=" • Golden Retriever" FontSize="14" Foreground="#64748b" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                            </StackPanel>
+                                            <TextBlock Text="Annual Vaccination &amp; Heartworm Check" FontSize="14" Foreground="#64748b" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Spacing="8">
+                                            <Border Background="#82f5c1" CornerRadius="16" Padding="12,6">
+                                                <TextBlock Text="CHECKED IN" FontSize="10" FontWeight="Black" Foreground="#00714e" LetterSpacing="1"/>
+                                            </Border>
+                                            <Border Background="#f1f5f9" CornerRadius="16" Width="32" Height="32" HorizontalAlignment="Right">
+                                                <TextBlock Text="SM" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border Classes="glassCard" Padding="24">
+                                    <Grid ColumnDefinitions="Auto, Auto, *, Auto">
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                                            <TextBlock Text="10:15" FontSize="24" FontWeight="Black" Foreground="#191c1e" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="AM" FontSize="10" FontWeight="Bold" Foreground="#94a3b8" HorizontalAlignment="Center" LetterSpacing="1"/>
+                                        </StackPanel>
+                                        <Border Grid.Column="1" Width="56" Height="56" CornerRadius="28" Background="#f1f5f9" Margin="0,0,24,0">
+                                            <TextBlock Text="🐈" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Luna" FontSize="18" FontWeight="Bold" Foreground="#191c1e"/>
+                                                <TextBlock Text=" • Siamese Cat" FontSize="14" Foreground="#64748b" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                            </StackPanel>
+                                            <TextBlock Text="Post-Op Wound Review (Dental)" FontSize="14" Foreground="#64748b" Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Spacing="8">
+                                            <Border Background="#e2e8f0" CornerRadius="16" Padding="12,6">
+                                                <TextBlock Text="IN LOBBY" FontSize="10" FontWeight="Black" Foreground="#475569" LetterSpacing="1"/>
+                                            </Border>
+                                            <Border Background="#f1f5f9" CornerRadius="16" Width="32" Height="32" HorizontalAlignment="Right">
+                                                <TextBlock Text="RJ" FontSize="10" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border CornerRadius="32" Padding="32" BoxShadow="0 16 32 0 #3310b981">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                            <GradientStop Offset="0" Color="#10b981"/>
+                                            <GradientStop Offset="1" Color="#059669"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Grid ColumnDefinitions="Auto, Auto, *, Auto">
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Margin="0,0,24,0">
+                                            <TextBlock Text="11:00" FontSize="24" FontWeight="Black" Foreground="White" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="AM" FontSize="10" FontWeight="Bold" Foreground="#a7f3d0" HorizontalAlignment="Center" LetterSpacing="1"/>
+                                        </StackPanel>
+                                        <Border Grid.Column="1" Width="56" Height="56" CornerRadius="28" Background="White" Margin="0,0,24,0">
+                                            <TextBlock Text="🐶" FontSize="32" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                                <TextBlock Text="Oliver" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                                                <TextBlock Text="• French Bulldog" FontSize="14" Foreground="#ecfdf5" VerticalAlignment="Center"/>
+                                                <Border Background="#33ffffff" CornerRadius="6" Padding="8,4">
+                                                    <TextBlock Text="HIGH PRIORITY" FontSize="9" FontWeight="Black" Foreground="White" LetterSpacing="1"/>
+                                                </Border>
+                                            </StackPanel>
+                                            <TextBlock Text="Acute respiratory distress - Emergency O2 setup" FontSize="14" Foreground="#ecfdf5" Margin="0,6,0,0"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="3" Background="White" Foreground="#047857" FontWeight="Bold" CornerRadius="24" Padding="24,12" VerticalAlignment="Center">
+                                            <TextBlock Text="Ready Room"/>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </StackPanel>
                         </StackPanel>
-                        <TextBlock Grid.Column="2" Text="›"
-                                   FontSize="22" Foreground="#2563EB"
-                                   VerticalAlignment="Center"/>
-                    </Grid>
-                </Button>
 
-                <!-- ─── כפתור חיות (לכולם) ──────────────────────────── -->
-                <Button Name="btnPets"
-                        Height="64"
-                        HorizontalAlignment="Stretch"
-                        Background="#064E3B"
-                        CornerRadius="12"
-                        BorderBrush="#059669" BorderThickness="1"
-                        Click="btnPets_Click">
-                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="16,0">
-                        <Border Grid.Column="0"
-                                Background="#047857" CornerRadius="8"
-                                Width="38" Height="38">
-                            <TextBlock Text="🐾" FontSize="18"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="14,0,0,0"
-                                    VerticalAlignment="Center" Spacing="2">
-                            <TextBlock Text="כרטיסי חיות"
-                                       FontSize="15" FontWeight="SemiBold"
-                                       Foreground="White"/>
-                            <TextBlock Text="צפייה וניהול רשומות בעלי חיים"
-                                       FontSize="11" Foreground="#6EE7B7"/>
+                        <StackPanel Grid.Column="1" Spacing="32">
+                            
+                            <Border Classes="glassCard" Padding="32" BorderBrush="#10b981" BorderThickness="0,4,0,0">
+                                <StackPanel>
+                                    <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,24">
+                                        <TextBlock Grid.Column="0" Text="Clinic Vitals" FontSize="18" FontWeight="Bold" Foreground="#191c1e"/>
+                                        <Ellipse Grid.Column="1" Width="8" Height="8" Fill="#10b981"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,12">
+                                        <TextBlock Grid.Column="0" Text="Occupancy" FontSize="14" Foreground="#3c4a42"/>
+                                        <TextBlock Grid.Column="1" Text="88%" FontSize="14" FontWeight="Bold" Foreground="#191c1e"/>
+                                    </Grid>
+                                    <Border Background="#f1f5f9" Height="8" CornerRadius="4" Margin="0,0,0,32">
+                                        <Border Background="#006c49" Width="200" HorizontalAlignment="Left" CornerRadius="4"/>
+                                    </Border>
+                                    <Grid ColumnDefinitions="*, *">
+                                        <Border Grid.Column="0" Background="#f8fafc" CornerRadius="16" Padding="16" Margin="0,0,8,0">
+                                            <StackPanel>
+                                                <TextBlock Text="IN-HOUSE" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1"/>
+                                                <TextBlock Text="24" FontSize="28" FontWeight="Black" Foreground="#191c1e" Margin="0,4,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Grid.Column="1" Background="#f8fafc" CornerRadius="16" Padding="16" Margin="8,0,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="DISCHARGED" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1"/>
+                                                <TextBlock Text="12" FontSize="28" FontWeight="Black" Foreground="#191c1e" Margin="0,4,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <StackPanel Margin="16,0,0,0">
+                                <TextBlock Text="Activity Timeline" FontSize="18" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,24"/>
+                                <Grid ColumnDefinitions="Auto, *">
+                                    <Rectangle Grid.Column="0" Width="2" Fill="#e2e8f0" HorizontalAlignment="Center" Margin="11,10,0,0"/>
+                                    
+                                    <StackPanel Grid.Column="1" Spacing="24" Margin="24,0,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="08:45 AM" FontSize="11" FontWeight="Bold" Foreground="#191c1e"/>
+                                            <TextBlock Text="Lab Batch #402 Received" FontSize="14" FontWeight="Bold" Foreground="#191c1e" Margin="0,4,0,0"/>
+                                            <TextBlock Text="3 results flagged for immediate review." FontSize="12" Foreground="#64748b" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="08:10 AM" FontSize="11" FontWeight="Bold" Foreground="#64748b"/>
+                                            <TextBlock Text="Staff Handover Complete" FontSize="14" FontWeight="Bold" Foreground="#191c1e" Margin="0,4,0,0"/>
+                                            <TextBlock Text="Morning shift took over from night rotation." FontSize="12" Foreground="#64748b" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock Text="07:30 AM" FontSize="11" FontWeight="Bold" Foreground="#64748b"/>
+                                            <TextBlock Text="Surgery Prep: Room 2" FontSize="14" FontWeight="Bold" Foreground="#191c1e" Margin="0,4,0,0"/>
+                                            <TextBlock Text="Sterilization cycle completed successfully." FontSize="12" Foreground="#64748b" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+
+                            <Border CornerRadius="32" Padding="32" Margin="0,24,0,0">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                        <GradientStop Offset="0" Color="#4ade80"/>
+                                        <GradientStop Offset="1" Color="#065f46"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <StackPanel VerticalAlignment="Bottom">
+                                    <TextBlock Text="🐱" FontSize="64" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                                    <TextBlock Text="New Remote Vitals App" FontSize="18" FontWeight="Bold" Foreground="White" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Help owners track recovery from home with our new telemetry sync tool." FontSize="12" Foreground="#d1fae5" TextWrapping="Wrap" Margin="0,0,0,16"/>
+                                    <Button Background="White" Foreground="#065f46" FontWeight="Black" FontSize="12" CornerRadius="12" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="0,16">
+                                        <TextBlock Text="LEARN MORE" LetterSpacing="1"/>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
+
                         </StackPanel>
-                        <TextBlock Grid.Column="2" Text="›"
-                                   FontSize="22" Foreground="#059669"
-                                   VerticalAlignment="Center"/>
                     </Grid>
-                </Button>
+                </StackPanel>
+            </ScrollViewer>
 
-                <!-- ─── כפתור ביקורים (וטרינר/ית בלבד) ─────────────── -->
-                <Button Name="btnVisits"
-                        Height="64"
-                        HorizontalAlignment="Stretch"
-                        Background="#2E1065"
-                        CornerRadius="12"
-                        BorderBrush="#7C3AED" BorderThickness="1"
-                        IsVisible="False"
-                        Click="btnVisits_Click">
-                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="16,0">
-                        <Border Grid.Column="0"
-                                Background="#6D28D9" CornerRadius="8"
-                                Width="38" Height="38">
-                            <TextBlock Text="🩺" FontSize="18"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"/>
-                        </Border>
-                        <StackPanel Grid.Column="1" Margin="14,0,0,0"
-                                    VerticalAlignment="Center" Spacing="2">
-                            <TextBlock Text="ביקורים וטיפולים"
-                                       FontSize="15" FontWeight="SemiBold"
-                                       Foreground="White"/>
-                            <TextBlock Text="רישום ביקורים ומתן תרופות"
-                                       FontSize="11" Foreground="#C4B5FD"/>
-                        </StackPanel>
-                        <TextBlock Grid.Column="2" Text="›"
-                                   FontSize="22" Foreground="#7C3AED"
-                                   VerticalAlignment="Center"/>
-                    </Grid>
-                </Button>
+            <local:CustomersView x:Name="CustomersPanel" Grid.Row="1" IsVisible="False" />
 
-            </StackPanel>
-        </ScrollViewer>
-
-        <!-- ══ FOOTER ══════════════════════════════════════════════════════ -->
-        <Border Grid.Row="2" Background="#1F2937"
-                BorderBrush="#374151" BorderThickness="0,1,0,0"
-                Padding="24,14">
-            <Button Name="btnLogout"
-                    Content="התנתקות"
-                    Height="42"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Center"
-                    Background="Transparent"
-                    Foreground="#6B7280"
-                    FontSize="14"
-                    FontWeight="SemiBold"
-                    BorderBrush="#374151" BorderThickness="1"
-                    CornerRadius="8"
-                    Click="btnLogout_Click"/>
-        </Border>
-
+        </Grid>
     </Grid>
 </Window>

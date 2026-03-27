@@ -1,31 +1,263 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="ClinicVetsSystem.MainWindow"
-        Title="ClinicVets - מערכת ניהול מרפאה"
-        Width="400" Height="500"
+        Title="ClinicVetsSystem"
+        Width="1200" Height="800"
+        MinWidth="900" MinHeight="650"
         WindowStartupLocation="CenterScreen"
-        Background="#1E1E1E">
+        Background="#f7f9fb"
+        FontFamily="Inter, sans-serif"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1">
 
-    <Grid Margin="20">
-        <StackPanel VerticalAlignment="Center">
-            <TextBlock Text="ClinicVets" FontSize="36" FontWeight="Bold" Foreground="#6366F1" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+    <Window.Styles>
+        <Style Selector="TextBox, ComboBox">
+            <Setter Property="Background" Value="#ffffff"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="40,14,16,14"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#191c1e"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.3"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement, ComboBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#006c49"/>
+        </Style>
+        
+        <Style Selector="Button.primary">
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Opacity" Value="0.85"/>
+        </Style>
 
-            <TextBlock Text="שם משתמש:" Foreground="White" Margin="0,0,0,5" FontSize="14"/>
-            <TextBox Name="txtUsername" Height="35" Margin="0,0,0,15" FontSize="16" />
+        <Style Selector="Button.outline">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="CornerRadius" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="32,12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.3"/>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.3"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.outline:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#006c49"/>
+        </Style>
 
-            <TextBlock Text="סיסמה:" Foreground="White" Margin="0,0,0,5" FontSize="14"/>
-            <TextBox Name="txtPassword" PasswordChar="*" Height="35" Margin="0,0,0,25" FontSize="16" />
+        <Style Selector="Button.chromeBtn">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#6c7a71"/>
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.chromeBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#e0e3e5"/>
+            <Setter Property="Foreground" Value="#191c1e"/>
+        </Style>
+        <Style Selector="Button.chromeBtn.closeBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#ba1a1a"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
 
-            <Button Name="btnLogin" Content="התחברות" Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#6366F1" Foreground="White" FontSize="16" FontWeight="Bold" CornerRadius="5" Click="btnLogin_Click"/>
+        <Style Selector="TextBlock.errorLabel">
+            <Setter Property="Foreground" Value="#ba1a1a"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Margin" Value="4,4,0,8"/>
+        </Style>
+    </Window.Styles>
 
-            <TextBlock Name="lblMessage" Foreground="#FF5555" HorizontalAlignment="Center" Margin="0,15,0,0" FontSize="14" IsVisible="False"/>
+    <Grid RowDefinitions="Auto, *">
+        
+        <Grid Grid.Row="0" Height="40" Background="Transparent" PointerPressed="TitleBar_PointerPressed" ZIndex="20">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,8,0" Spacing="4">
+                <Button Classes="chromeBtn" Click="Minimize_Click"><PathIcon Data="M20,14H4V10H20" Width="12" Height="12"/></Button>
+                <Button Classes="chromeBtn" Click="Maximize_Click"><PathIcon Data="M4,4H20V20H4V4M6,8V18H18V8H6Z" Width="12" Height="12"/></Button>
+                <Button Classes="chromeBtn closeBtn" Click="Close_Click"><PathIcon Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Width="12" Height="12"/></Button>
+            </StackPanel>
+        </Grid>
 
-            <!-- Divider -->
-            <Rectangle Height="1" Fill="#333333" Margin="0,20,0,15"/>
+        <Grid Grid.Row="1" Margin="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+            
+            <Border MaxWidth="1000" Width="1000" MinHeight="680" Height="680" 
+                    CornerRadius="32" Background="#ffffff" ClipToBounds="True" BoxShadow="0 24 48 0 #0F005236">
+                
+                <Grid x:Name="ContainerGrid" ColumnDefinitions="*,*" SizeChanged="ContainerGrid_SizeChanged">
+                    
+                    <Panel x:Name="LeftPanel" Grid.Column="0" Background="#ffffff">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel Margin="48,32" MaxWidth="380" HorizontalAlignment="Center">
+                                
+                                <TextBlock Text="Register Staff" FontSize="32" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
+                                <TextBlock Text="Create a new clinician or administrative profile." FontSize="14" Foreground="#3c4a42" Margin="0,0,0,24"/>
 
-            <TextBlock Text="עובד חדש במרפאה?" Foreground="#888888" HorizontalAlignment="Center" FontSize="13" Margin="0,0,0,8"/>
+                                <Border Background="#1Affdad6" CornerRadius="8" Margin="0,0,0,16" IsVisible="{Binding #lblRegMessage.IsVisible}">
+                                    <TextBlock Name="lblRegMessage" Foreground="#ba1a1a" Padding="12" FontSize="13" FontWeight="Medium" IsVisible="False" TextWrapping="Wrap"/>
+                                </Border>
 
-            <Button Name="btnRegister" Content="הרשמה" Height="38" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="Transparent" Foreground="#6366F1" FontSize="14" FontWeight="SemiBold" CornerRadius="5" BorderBrush="#6366F1" BorderThickness="1.5" Click="btnRegister_Click"/>
-        </StackPanel>
+                                <TextBlock Text="USERNAME" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
+                                <Panel>
+                                    <PathIcon Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
+                                    <TextBox Name="txtRegUsername" Watermark="e.g. jsmith12"/>
+                                </Panel>
+                                <TextBlock Name="lblUsernameError" Classes="errorLabel" IsVisible="False"/>
+
+                                <TextBlock Text="PASSWORD" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
+                                <Panel>
+                                    <PathIcon Data="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.89,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
+                                    <TextBox Name="txtRegPassword" PasswordChar="•" Watermark="••••••••••••"/>
+                                </Panel>
+                                <TextBlock Name="lblPasswordError" Classes="errorLabel" IsVisible="False"/>
+
+                                <TextBlock Text="EMPLOYEE NUMBER" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
+                                <Panel>
+                                    <PathIcon Data="M14,19H18V5H14M6,19H10V5H6M19,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
+                                    <TextBox Name="txtRegEmpNum" Watermark="1234"/>
+                                </Panel>
+                                <TextBlock Name="lblEmpNumError" Classes="errorLabel" IsVisible="False"/>
+
+                                <TextBlock Text="ID NUMBER" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
+                                <Panel>
+                                    <PathIcon Data="M2,3H22C23.05,3 24,3.95 24,5V19C24,20.05 23.05,21 22,21H2C0.95,21 0,20.05 0,19V5C0,3.95 0.95,3 2,3M14,6V7H22V6H14M14,8V9H21.5L22,9V8H14M14,10V11H21V10H14M8,13.91C6,13.91 2,15 2,17V18H14V17C14,15 10,13.91 8,13.91M8,6A3,3 0 0,0 5,9A3,3 0 0,0 8,12A3,3 0 0,0 11,9A3,3 0 0,0 8,6Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
+                                    <TextBox Name="txtRegId" Watermark="012345678"/>
+                                </Panel>
+                                <TextBlock Name="lblIdError" Classes="errorLabel" IsVisible="False"/>
+
+                                <TextBlock Text="EMAIL ADDRESS" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
+                                <Panel>
+                                    <PathIcon Data="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
+                                    <TextBox Name="txtRegEmail" Watermark="dr.green@clinic.com"/>
+                                </Panel>
+                                <TextBlock Name="lblEmailError" Classes="errorLabel" IsVisible="False"/>
+
+                                <TextBlock Text="ROLE" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
+                                <ComboBox Name="cmbRegRole" PlaceholderText="Select Role" Margin="0,0,0,8">
+                                    <ComboBoxItem Content="וטרינר/ית"/>
+                                    <ComboBoxItem Content="מזכיר/ה"/>
+                                </ComboBox>
+                                <TextBlock Name="lblRoleError" Classes="errorLabel" IsVisible="False"/>
+
+                                <Button Name="btnSubmitRegister" Classes="primary" Margin="0,16,0,32" Height="52" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="btnSubmitRegister_Click">
+                                    <Button.Background>
+                                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                            <GradientStop Offset="0" Color="#006c49"/>
+                                            <GradientStop Offset="1" Color="#10b981"/>
+                                        </LinearGradientBrush>
+                                    </Button.Background>
+                                    <TextBlock Text="Complete Registration" VerticalAlignment="Center"/>
+                                </Button>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Panel>
+
+                    <Panel x:Name="RightPanel" Grid.Column="1" Background="#ffffff">
+                        <StackPanel Margin="48,80" MaxWidth="380" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            
+                            <TextBlock Text="Welcome Back" FontSize="36" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
+                            <TextBlock Text="Please enter your clinician credentials to access the system." FontSize="15" Foreground="#3c4a42" Margin="0,0,0,40"/>
+
+                            <Border Background="#1Affdad6" CornerRadius="8" Margin="0,0,0,16" IsVisible="{Binding #lblLoginMessage.IsVisible}">
+                                <TextBlock Name="lblLoginMessage" Foreground="#ba1a1a" Padding="12" FontSize="13" FontWeight="Medium" IsVisible="False" TextWrapping="Wrap"/>
+                            </Border>
+
+                            <TextBlock Text="User Name" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,8"/>
+                            <Panel Margin="0,0,0,24">
+                                <PathIcon Data="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
+                                <TextBox Name="txtLoginEmail" Watermark="Yochayab"/>
+                            </Panel>
+
+                            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                                <TextBlock Grid.Column="0" Text="PASSWORD" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1"/>
+                                <TextBlock Grid.Column="1" Text="Forgot password?" FontSize="11" FontWeight="Bold" Foreground="#006c49" Cursor="Hand"/>
+                            </Grid>
+                            <Panel Margin="0,0,0,40">
+                                <PathIcon Data="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.89,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
+                                <TextBox Name="txtLoginPassword" PasswordChar="•" Watermark="••••••••••••"/>
+                            </Panel>
+
+                            <Button Name="btnLoginSubmit" Classes="primary" Height="52" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="btnLoginSubmit_Click">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                        <GradientStop Offset="0" Color="#006c49"/>
+                                        <GradientStop Offset="1" Color="#10b981"/>
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                                <TextBlock Text="Enter Clinic Dashboard" VerticalAlignment="Center"/>
+                            </Button>
+                        </StackPanel>
+                    </Panel>
+
+                    <Border x:Name="OverlayPanel" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left" ZIndex="10" 
+                            Width="{Binding #LeftPanel.Bounds.Width}" BoxShadow="0 0 32 0 #40005236" RenderTransform="translateX(0px)">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Offset="0" Color="#006c49"/>
+                                <GradientStop Offset="1" Color="#00422b"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        
+                        <Border.Transitions>
+                            <Transitions>
+                                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.7" Easing="CubicEaseInOut"/>
+                            </Transitions>
+                        </Border.Transitions>
+
+                        <Grid Margin="40">
+                            <StackPanel x:Name="OverlayLeftContent" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <StackPanel.Transitions>
+                                    <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.4"/></Transitions>
+                                </StackPanel.Transitions>
+                                <TextBlock Text="🐾" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,24"/>
+                                <TextBlock Text="Restoring Vitality" FontSize="36" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                                <TextBlock Text="New to the greenhouse? Register your staff profile to start optimizing pet care." 
+                                           FontSize="16" Foreground="#CCFFFFFF" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="320" Margin="0,0,0,40" LineHeight="24"/>
+                                <Button Classes="outline" Content="CREATE ACCOUNT" HorizontalAlignment="Center" Click="ToggleSlide_Click"/>
+                            </StackPanel>
+
+                            <StackPanel x:Name="OverlayRightContent" VerticalAlignment="Center" HorizontalAlignment="Center" Opacity="0" IsHitTestVisible="False">
+                                <StackPanel.Transitions>
+                                    <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.4"/></Transitions>
+                                </StackPanel.Transitions>
+                                <TextBlock Text="🩺" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,24"/>
+                                <TextBlock Text="Already a Member?" FontSize="36" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                                <TextBlock Text="Welcome back! Please sign in to access your dashboard and daily schedule." 
+                                           FontSize="16" Foreground="#CCFFFFFF" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="320" Margin="0,0,0,40" LineHeight="24"/>
+                                <Button Classes="outline" Content="SIGN IN" HorizontalAlignment="Center" Click="ToggleSlide_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
