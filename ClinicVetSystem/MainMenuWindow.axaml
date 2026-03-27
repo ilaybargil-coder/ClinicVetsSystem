@@ -1,0 +1,179 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ClinicVetsSystem.MainMenuWindow"
+        Title="ClinicVets"
+        Width="480" Height="560"
+        WindowStartupLocation="CenterScreen"
+        Background="#111827"
+        CanResize="False">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- ══ HEADER BAR ══════════════════════════════════════════════════ -->
+        <Border Grid.Row="0" Background="#1F2937"
+                BorderBrush="#374151" BorderThickness="0,0,0,1"
+                Padding="24,18">
+            <StackPanel Spacing="2">
+                <TextBlock Text="ClinicVets"
+                           FontSize="28" FontWeight="Bold"
+                           Foreground="#6366F1"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="מערכת ניהול מרפאה וטרינרית"
+                           FontSize="12" Foreground="#6B7280"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ══ CONTENT ═════════════════════════════════════════════════════ -->
+        <ScrollViewer Grid.Row="1" Padding="24,20">
+            <StackPanel Spacing="12">
+
+                <!-- כרטיס ברוך הבא -->
+                <Border Background="#1F2937" CornerRadius="12"
+                        BorderBrush="#374151" BorderThickness="1"
+                        Padding="20,16">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Border Grid.Column="0"
+                                Background="#312E81"
+                                CornerRadius="50"
+                                Width="46" Height="46"
+                                Margin="0,0,14,0">
+                            <TextBlock Text="👤" FontSize="22"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Name="lblWelcome"
+                                       FontSize="15" FontWeight="SemiBold"
+                                       Foreground="White"/>
+                            <Border Background="#312E81" CornerRadius="4"
+                                    Padding="8,2" HorizontalAlignment="Left">
+                                <TextBlock Name="lblRole"
+                                           FontSize="11" FontWeight="SemiBold"
+                                           Foreground="#A5B4FC"/>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- ──── כותרת ────────────────────────────────────────── -->
+                <TextBlock Text="פעולות מהירות"
+                           FontSize="11" FontWeight="SemiBold"
+                           Foreground="#6B7280"
+                           Margin="2,8,0,0"/>
+
+                <!-- ─── כפתור לקוחות (מזכיר/ה בלבד) ────────────────── -->
+                <Button Name="btnCustomers"
+                        Height="64"
+                        HorizontalAlignment="Stretch"
+                        Background="#1E3A5F"
+                        CornerRadius="12"
+                        BorderBrush="#2563EB" BorderThickness="1"
+                        IsVisible="False"
+                        Click="btnCustomers_Click">
+                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="16,0">
+                        <Border Grid.Column="0"
+                                Background="#1D4ED8" CornerRadius="8"
+                                Width="38" Height="38">
+                            <TextBlock Text="👥" FontSize="18"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="14,0,0,0"
+                                    VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="ניהול לקוחות"
+                                       FontSize="15" FontWeight="SemiBold"
+                                       Foreground="White"/>
+                            <TextBlock Text="הוספה, עריכה וחיפוש בעלי חיות"
+                                       FontSize="11" Foreground="#93C5FD"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="›"
+                                   FontSize="22" Foreground="#2563EB"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+
+                <!-- ─── כפתור חיות (לכולם) ──────────────────────────── -->
+                <Button Name="btnPets"
+                        Height="64"
+                        HorizontalAlignment="Stretch"
+                        Background="#064E3B"
+                        CornerRadius="12"
+                        BorderBrush="#059669" BorderThickness="1"
+                        Click="btnPets_Click">
+                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="16,0">
+                        <Border Grid.Column="0"
+                                Background="#047857" CornerRadius="8"
+                                Width="38" Height="38">
+                            <TextBlock Text="🐾" FontSize="18"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="14,0,0,0"
+                                    VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="כרטיסי חיות"
+                                       FontSize="15" FontWeight="SemiBold"
+                                       Foreground="White"/>
+                            <TextBlock Text="צפייה וניהול רשומות בעלי חיים"
+                                       FontSize="11" Foreground="#6EE7B7"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="›"
+                                   FontSize="22" Foreground="#059669"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+
+                <!-- ─── כפתור ביקורים (וטרינר/ית בלבד) ─────────────── -->
+                <Button Name="btnVisits"
+                        Height="64"
+                        HorizontalAlignment="Stretch"
+                        Background="#2E1065"
+                        CornerRadius="12"
+                        BorderBrush="#7C3AED" BorderThickness="1"
+                        IsVisible="False"
+                        Click="btnVisits_Click">
+                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="16,0">
+                        <Border Grid.Column="0"
+                                Background="#6D28D9" CornerRadius="8"
+                                Width="38" Height="38">
+                            <TextBlock Text="🩺" FontSize="18"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel Grid.Column="1" Margin="14,0,0,0"
+                                    VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Text="ביקורים וטיפולים"
+                                       FontSize="15" FontWeight="SemiBold"
+                                       Foreground="White"/>
+                            <TextBlock Text="רישום ביקורים ומתן תרופות"
+                                       FontSize="11" Foreground="#C4B5FD"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" Text="›"
+                                   FontSize="22" Foreground="#7C3AED"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Button>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ══ FOOTER ══════════════════════════════════════════════════════ -->
+        <Border Grid.Row="2" Background="#1F2937"
+                BorderBrush="#374151" BorderThickness="0,1,0,0"
+                Padding="24,14">
+            <Button Name="btnLogout"
+                    Content="התנתקות"
+                    Height="42"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Background="Transparent"
+                    Foreground="#6B7280"
+                    FontSize="14"
+                    FontWeight="SemiBold"
+                    BorderBrush="#374151" BorderThickness="1"
+                    CornerRadius="8"
+                    Click="btnLogout_Click"/>
+        </Border>
+
+    </Grid>
+</Window>

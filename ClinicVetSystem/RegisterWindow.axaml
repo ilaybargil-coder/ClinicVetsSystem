@@ -1,0 +1,102 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ClinicVetsSystem.RegisterWindow"
+        Title="ClinicVets - רישום עובד חדש"
+        Width="440" Height="650"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E1E1E"
+        CanResize="False">
+
+    <ScrollViewer>
+        <Grid Margin="30">
+            <StackPanel VerticalAlignment="Top" Spacing="10">
+
+                <TextBlock Text="רישום עובד חדש"
+                           FontSize="26" FontWeight="Bold"
+                           Foreground="#6366F1"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,20"/>
+
+                <!-- Username -->
+                <TextBlock Text="שם משתמש (6-8 תווים, מקס' 2 ספרות):"
+                           Foreground="White" FontSize="13"/>
+                <TextBox Name="txtUsername" Height="35" FontSize="14"/>
+                <TextBlock Name="lblUsernameError" Foreground="#FF5555"
+                           FontSize="11" IsVisible="False"/>
+
+                <!-- Password -->
+                <TextBlock Text="סיסמה (8-10 תווים, אות אחת, ספרה אחת, תו מיוחד: !@#$.):"
+                           Foreground="White" FontSize="13" TextWrapping="Wrap"/>
+                <TextBox Name="txtPassword" PasswordChar="*" Height="35" FontSize="14"/>
+                <TextBlock Name="lblPasswordError" Foreground="#FF5555"
+                           FontSize="11" IsVisible="False"/>
+
+                <!-- Employee Number -->
+                <TextBlock Text="מספר עובד (4 ספרות בדיוק):"
+                           Foreground="White" FontSize="13"/>
+                <TextBox Name="txtEmployeeNumber" Height="35" FontSize="14"/>
+                <TextBlock Name="lblEmployeeNumberError" Foreground="#FF5555"
+                           FontSize="11" IsVisible="False"/>
+
+                <!-- ID -->
+                <TextBlock Text='ת"ז (9 ספרות):' Foreground="White" FontSize="13"/>
+                <TextBox Name="txtId" Height="35" FontSize="14"/>
+                <TextBlock Name="lblIdError" Foreground="#FF5555"
+                           FontSize="11" IsVisible="False"/>
+
+                <!-- Email -->
+                <TextBlock Text="אימייל:" Foreground="White" FontSize="13"/>
+                <TextBox Name="txtEmail" Height="35" FontSize="14"/>
+                <TextBlock Name="lblEmailError" Foreground="#FF5555"
+                           FontSize="11" IsVisible="False"/>
+
+                <!-- Role -->
+                <TextBlock Text="תפקיד:" Foreground="White" FontSize="13"/>
+                <ComboBox Name="cmbRole"
+                          Height="35"
+                          HorizontalAlignment="Stretch"
+                          FontSize="14">
+                    <ComboBoxItem Content="וטרינר/ית"/>
+                    <ComboBoxItem Content="מזכיר/ה"/>
+                </ComboBox>
+                <TextBlock Name="lblRoleError" Foreground="#FF5555"
+                           FontSize="11" IsVisible="False"/>
+
+                <!-- General message -->
+                <TextBlock Name="lblMessage"
+                           Foreground="#FF5555"
+                           HorizontalAlignment="Center"
+                           FontSize="13"
+                           TextWrapping="Wrap"
+                           IsVisible="False"
+                           Margin="0,5,0,0"/>
+
+                <!-- Buttons -->
+                <Button Name="btnRegister"
+                        Content="הרשמה"
+                        Height="42"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Background="#6366F1"
+                        Foreground="White"
+                        FontSize="15"
+                        FontWeight="Bold"
+                        CornerRadius="6"
+                        Margin="0,10,0,0"
+                        Click="btnRegister_Click"/>
+
+                <Button Name="btnBack"
+                        Content="חזרה להתחברות"
+                        Height="36"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Background="Transparent"
+                        Foreground="#888888"
+                        FontSize="13"
+                        CornerRadius="6"
+                        Click="btnBack_Click"/>
+
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Window>

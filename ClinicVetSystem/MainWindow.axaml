@@ -1,0 +1,31 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ClinicVetsSystem.MainWindow"
+        Title="ClinicVets - מערכת ניהול מרפאה"
+        Width="400" Height="500"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E1E1E">
+
+    <Grid Margin="20">
+        <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="ClinicVets" FontSize="36" FontWeight="Bold" Foreground="#6366F1" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+
+            <TextBlock Text="שם משתמש:" Foreground="White" Margin="0,0,0,5" FontSize="14"/>
+            <TextBox Name="txtUsername" Height="35" Margin="0,0,0,15" FontSize="16" />
+
+            <TextBlock Text="סיסמה:" Foreground="White" Margin="0,0,0,5" FontSize="14"/>
+            <TextBox Name="txtPassword" PasswordChar="*" Height="35" Margin="0,0,0,25" FontSize="16" />
+
+            <Button Name="btnLogin" Content="התחברות" Height="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#6366F1" Foreground="White" FontSize="16" FontWeight="Bold" CornerRadius="5" Click="btnLogin_Click"/>
+
+            <TextBlock Name="lblMessage" Foreground="#FF5555" HorizontalAlignment="Center" Margin="0,15,0,0" FontSize="14" IsVisible="False"/>
+
+            <!-- Divider -->
+            <Rectangle Height="1" Fill="#333333" Margin="0,20,0,15"/>
+
+            <TextBlock Text="עובד חדש במרפאה?" Foreground="#888888" HorizontalAlignment="Center" FontSize="13" Margin="0,0,0,8"/>
+
+            <Button Name="btnRegister" Content="הרשמה" Height="38" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="Transparent" Foreground="#6366F1" FontSize="14" FontWeight="SemiBold" CornerRadius="5" BorderBrush="#6366F1" BorderThickness="1.5" Click="btnRegister_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

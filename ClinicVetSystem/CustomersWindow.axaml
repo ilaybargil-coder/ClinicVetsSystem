@@ -1,0 +1,164 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:ClinicVetsSystem"
+        x:Class="ClinicVetsSystem.CustomersWindow"
+        Title="ClinicVets — ניהול לקוחות"
+        Width="960" Height="640"
+        MinWidth="700" MinHeight="450"
+        WindowStartupLocation="CenterScreen"
+        Background="#111827">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+        <!-- ══ HEADER ══════════════════════════════════════════════════════ -->
+        <Border Grid.Row="0" Background="#1F2937"
+                BorderBrush="#374151" BorderThickness="0,0,0,1"
+                Padding="24,16">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <Button Grid.Column="0" Name="btnBack"
+                        Content="← חזרה"
+                        Background="Transparent" Foreground="#6B7280"
+                        FontSize="13" Padding="0" BorderThickness="0"
+                        Click="btnBack_Click"/>
+
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="2">
+                    <TextBlock Text="👥  ניהול לקוחות"
+                               FontSize="22" FontWeight="Bold"
+                               Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Name="lblCount" FontSize="12" Foreground="#6366F1"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <Button Grid.Column="2" Name="btnAdd"
+                        Content="＋  הוסף לקוח"
+                        Height="40" Padding="20,0"
+                        Background="#6366F1" Foreground="White"
+                        FontSize="14" FontWeight="SemiBold" CornerRadius="8"
+                        Click="btnAdd_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- ══ TOOLBAR ═════════════════════════════════════════════════════ -->
+        <Border Grid.Row="1" Background="#1F2937" Padding="24,12">
+            <Grid ColumnDefinitions="*,12,Auto,8,Auto">
+
+                <Border Grid.Column="0" Background="#374151" CornerRadius="8"
+                        BorderBrush="#4B5563" BorderThickness="1">
+                    <Grid ColumnDefinitions="Auto,*,Auto" Margin="12,0">
+                        <TextBlock Grid.Column="0" Text="🔍"
+                                   VerticalAlignment="Center"
+                                   Foreground="#6B7280" Margin="0,0,8,0"/>
+                        <TextBox Grid.Column="1" Name="txtSearch"
+                                 Background="Transparent" BorderThickness="0"
+                                 Foreground="White" CaretBrush="White"
+                                 FontSize="14" Height="38"
+                                 Watermark='חיפוש לפי שם או ת"ז...'
+                                 TextChanged="txtSearch_TextChanged"/>
+                        <Button Grid.Column="2" Name="btnClearSearch"
+                                Content="✕" Background="Transparent"
+                                Foreground="#6B7280" FontSize="12"
+                                Padding="4" BorderThickness="0"
+                                IsVisible="False" Click="btnClearSearch_Click"/>
+                    </Grid>
+                </Border>
+
+                <Button Grid.Column="2" Name="btnEdit"
+                        Content="✏️  עריכה" Height="40" Padding="18,0"
+                        Background="#1F2937" Foreground="#D1D5DB"
+                        FontSize="13" FontWeight="SemiBold" CornerRadius="8"
+                        BorderBrush="#374151" BorderThickness="1.5"
+                        IsEnabled="False" Click="btnEdit_Click"/>
+
+                <Button Grid.Column="4" Name="btnDelete"
+                        Content="🗑️  מחיקה" Height="40" Padding="18,0"
+                        Background="#450A0A" Foreground="#FCA5A5"
+                        FontSize="13" FontWeight="SemiBold" CornerRadius="8"
+                        BorderBrush="#7F1D1D" BorderThickness="1.5"
+                        IsEnabled="False" Click="btnDelete_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- ══ TABLE HEADER ════════════════════════════════════════════════ -->
+        <Border Grid.Row="2" Background="#1F2937"
+                BorderBrush="#374151" BorderThickness="0,0,0,1"
+                Padding="16,0">
+            <Grid ColumnDefinitions="130,*,150,220,150" Height="42">
+                <TextBlock Grid.Column="0" Text='ת"ז'
+                           Foreground="#9CA3AF" FontSize="12" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="8,0"/>
+                <TextBlock Grid.Column="1" Text="שם מלא"
+                           Foreground="#9CA3AF" FontSize="12" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="8,0"/>
+                <TextBlock Grid.Column="2" Text="טלפון"
+                           Foreground="#9CA3AF" FontSize="12" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="8,0"/>
+                <TextBlock Grid.Column="3" Text="אימייל"
+                           Foreground="#9CA3AF" FontSize="12" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="8,0"/>
+                <TextBlock Grid.Column="4" Text="תאריך הצטרפות"
+                           Foreground="#9CA3AF" FontSize="12" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="8,0"/>
+            </Grid>
+        </Border>
+
+        <!-- ══ LIST ════════════════════════════════════════════════════════ -->
+        <ListBox Grid.Row="3" Name="lstCustomers"
+                 Background="#111827"
+                 BorderThickness="0"
+                 SelectionMode="Single"
+                 SelectionChanged="lstCustomers_SelectionChanged">
+
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="Padding" Value="16,0"/>
+                    <Setter Property="Height" Value="48"/>
+                    <Setter Property="Background" Value="Transparent"/>
+                    <Setter Property="BorderBrush" Value="#1F2937"/>
+                    <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                </Style>
+            </ListBox.Styles>
+
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="local:CustomerRow">
+                    <Grid ColumnDefinitions="130,*,150,220,150">
+                        <TextBlock Grid.Column="0" Text="{Binding Id}"
+                                   Foreground="#D1D5DB" FontSize="13"
+                                   VerticalAlignment="Center" Margin="8,0"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Grid.Column="1" Text="{Binding FullName}"
+                                   Foreground="White" FontSize="14" FontWeight="Medium"
+                                   VerticalAlignment="Center" Margin="8,0"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Grid.Column="2" Text="{Binding Phone}"
+                                   Foreground="#D1D5DB" FontSize="13"
+                                   VerticalAlignment="Center" Margin="8,0"/>
+                        <TextBlock Grid.Column="3" Text="{Binding Email}"
+                                   Foreground="#9CA3AF" FontSize="13"
+                                   VerticalAlignment="Center" Margin="8,0"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Grid.Column="4" Text="{Binding CreatedAtFormatted}"
+                                   Foreground="#6B7280" FontSize="12"
+                                   VerticalAlignment="Center" Margin="8,0"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- ══ STATUS BAR ══════════════════════════════════════════════════ -->
+        <Border Grid.Row="4" Background="#1F2937"
+                BorderBrush="#374151" BorderThickness="0,1,0,0"
+                Padding="24,10">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Name="lblStatus"
+                           Text="טוען נתונים..."
+                           Foreground="#6B7280" FontSize="12"
+                           VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Name="lblSelected"
+                           Foreground="#6366F1" FontSize="12"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+    </Grid>
+</Window>

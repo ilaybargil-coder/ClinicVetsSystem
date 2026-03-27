@@ -1,0 +1,93 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ClinicVetsSystem.CustomerDialog"
+        Title="לקוח"
+        Width="460"
+        WindowStartupLocation="CenterOwner"
+        Background="#111827"
+        CanResize="False"
+        SizeToContent="Height">
+
+    <Border Padding="28">
+        <StackPanel Spacing="0">
+
+            <!-- Title -->
+            <TextBlock Name="lblTitle" Text="הוספת לקוח חדש"
+                       FontSize="20" FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,24"/>
+
+            <!-- ת"ז -->
+            <TextBlock Text='ת"ז (9 ספרות)' Foreground="#9CA3AF" FontSize="13" Margin="0,0,0,6"/>
+            <Border Background="#1F2937" CornerRadius="8" BorderBrush="#374151" BorderThickness="1.5" Padding="12,0">
+                <TextBox Name="txtId"
+                         Background="Transparent" BorderThickness="0"
+                         Foreground="White" FontSize="14" Height="40"
+                         Watermark="123456789"/>
+            </Border>
+            <TextBlock Name="lblIdError" Foreground="#F87171" FontSize="12"
+                       IsVisible="False" Margin="4,4,0,0"/>
+
+            <Rectangle Height="1" Fill="Transparent" Margin="0,12,0,0"/>
+
+            <!-- שם מלא -->
+            <TextBlock Text="שם מלא" Foreground="#9CA3AF" FontSize="13" Margin="0,0,0,6"/>
+            <Border Background="#1F2937" CornerRadius="8" BorderBrush="#374151" BorderThickness="1.5" Padding="12,0">
+                <TextBox Name="txtFullName"
+                         Background="Transparent" BorderThickness="0"
+                         Foreground="White" FontSize="14" Height="40"
+                         Watermark="ישראל ישראלי"/>
+            </Border>
+            <TextBlock Name="lblFullNameError" Foreground="#F87171" FontSize="12"
+                       IsVisible="False" Margin="4,4,0,0"/>
+
+            <Rectangle Height="1" Fill="Transparent" Margin="0,12,0,0"/>
+
+            <!-- טלפון -->
+            <TextBlock Text="טלפון" Foreground="#9CA3AF" FontSize="13" Margin="0,0,0,6"/>
+            <Border Background="#1F2937" CornerRadius="8" BorderBrush="#374151" BorderThickness="1.5" Padding="12,0">
+                <TextBox Name="txtPhone"
+                         Background="Transparent" BorderThickness="0"
+                         Foreground="White" FontSize="14" Height="40"
+                         Watermark="0501234567"/>
+            </Border>
+            <TextBlock Name="lblPhoneError" Foreground="#F87171" FontSize="12"
+                       IsVisible="False" Margin="4,4,0,0"/>
+
+            <Rectangle Height="1" Fill="Transparent" Margin="0,12,0,0"/>
+
+            <!-- אימייל (אופציונלי) -->
+            <TextBlock Text="אימייל (אופציונלי)" Foreground="#9CA3AF" FontSize="13" Margin="0,0,0,6"/>
+            <Border Background="#1F2937" CornerRadius="8" BorderBrush="#374151" BorderThickness="1.5" Padding="12,0">
+                <TextBox Name="txtEmail"
+                         Background="Transparent" BorderThickness="0"
+                         Foreground="White" FontSize="14" Height="40"
+                         Watermark="example@email.com"/>
+            </Border>
+            <TextBlock Name="lblEmailError" Foreground="#F87171" FontSize="12"
+                       IsVisible="False" Margin="4,4,0,0"/>
+
+            <Rectangle Height="1" Fill="Transparent" Margin="0,24,0,0"/>
+
+            <!-- Buttons -->
+            <Grid ColumnDefinitions="*,12,*">
+                <Button Grid.Column="0" Name="btnCancel" Content="ביטול"
+                        Height="44" HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Background="#374151" Foreground="#9CA3AF"
+                        FontSize="14" FontWeight="SemiBold"
+                        CornerRadius="8"
+                        Click="btnCancel_Click"/>
+                <Button Grid.Column="2" Name="btnSave" Content="שמירה"
+                        Height="44" HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        Background="#6366F1" Foreground="White"
+                        FontSize="14" FontWeight="SemiBold"
+                        CornerRadius="8"
+                        Click="btnSave_Click"/>
+            </Grid>
+
+        </StackPanel>
+    </Border>
+</Window>
