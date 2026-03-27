@@ -1,0 +1,120 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:ClinicVetsSystem"
+             x:Class="ClinicVetsSystem.CustomersView"
+             FontFamily="Inter, sans-serif">
+
+    <UserControl.Styles>
+        <Style Selector="Border.glassCard">
+            <Setter Property="Background" Value="#ffffff"/>
+            <Setter Property="CornerRadius" Value="32"/>
+            <Setter Property="BoxShadow" Value="0 10 30 0 #08005236"/>
+        </Style>
+
+        <Style Selector="TextBox.formInput">
+            <Setter Property="Background" Value="#f2f4f6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16,14"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+        <Style Selector="TextBox.formInput:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#006c49"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+        </Style>
+
+        <Style Selector="Button.primaryAction">
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="48,16,48,48" Spacing="32">
+                <Grid ColumnDefinitions="*, Auto">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="Customers Management" FontSize="32" FontWeight="Black" Foreground="#191c1e"/>
+                        <TextBlock Name="lblCustomerCount" Text="Loading clients..." FontSize="15" Foreground="#64748b"/>
+                    </StackPanel>
+                    
+                    <Button Grid.Column="1" Name="btnAddCustomer" Classes="primaryAction" Padding="24,14" Click="btnAddCustomer_Click">
+                        <Button.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Offset="0" Color="#006c49"/>
+                                <GradientStop Offset="1" Color="#10b981"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                        <TextBlock Text="+ Register Client"/>
+                    </Button>
+                </Grid>
+
+                <Border Classes="glassCard" Padding="32">
+                    <StackPanel Spacing="24">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <TextBox Name="txtSearch" Classes="formInput" Width="350" Watermark="Search name or ID..." HorizontalAlignment="Left" TextChanged="txtSearch_TextChanged"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                                <Button Name="btnEdit" IsEnabled="False" Click="btnEdit_Click" Content="✏️ Edit" Background="#eef2ff" Foreground="#4338ca" CornerRadius="12" Padding="16,8"/>
+                                <Button Name="btnDelete" IsEnabled="False" Click="btnDelete_Click" Content="🗑️ Remove" Background="#fef2f2" Foreground="#dc2626" CornerRadius="12" Padding="16,8"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <ListBox Name="lstCustomers" Background="Transparent" BorderThickness="0" SelectionChanged="lstCustomers_SelectionChanged" MinHeight="400">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="local:CustomerRow">
+                                    <Grid ColumnDefinitions="140, 2*, 1.5*, 2*, 1*">
+                                        <TextBlock Grid.Column="0" Text="{Binding Id}" VerticalAlignment="Center" Foreground="#64748b"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding FullName}" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Phone}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding Email}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="4" Text="{Binding CreatedAtFormatted}" FontSize="12" VerticalAlignment="Center" Foreground="#94a3b8"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock Name="lblStatus" Text="Ready." FontSize="12" Foreground="#10b981" HorizontalAlignment="Right"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Grid Name="ModalOverlay" IsVisible="False" Background="#80000000" ZIndex="100">
+            <Button Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btnCancelDialog_Click"/>
+            
+            <Border Classes="glassCard" Width="500" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="40">
+                <StackPanel Spacing="8">
+                    <TextBlock Name="lblDialogTitle" Text="Register New Client" FontSize="24" FontWeight="Black" Foreground="#191c1e" Margin="0,0,0,24"/>
+                    
+                    <TextBlock Text="ID NUMBER" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1"/>
+                    <TextBox Name="txtDialogId" Classes="formInput" Watermark="9 Digits"/>
+                    
+                    <TextBlock Text="FULL NAME" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1"/>
+                    <TextBox Name="txtDialogName" Classes="formInput" Watermark="e.g. John Doe"/>
+                    
+                    <TextBlock Text="PHONE NUMBER" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1"/>
+                    <TextBox Name="txtDialogPhone" Classes="formInput" Watermark="05X-XXXXXXX"/>
+                    
+                    <TextBlock Text="EMAIL ADDRESS" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1"/>
+                    <TextBox Name="txtDialogEmail" Classes="formInput" Watermark="name@example.com"/>
+
+                    <TextBlock Name="lblDialogError" Foreground="#dc2626" FontSize="12" IsVisible="False" Margin="0,0,0,16"/>
+
+                    <Grid ColumnDefinitions="*, *" Margin="0,16,0,0" ColumnSpacing="16">
+                        <Button Grid.Column="0" Content="Cancel" Click="btnCancelDialog_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#f1f5f9" Foreground="#475569" CornerRadius="12" Height="48"/>
+                        <Button Grid.Column="1" Name="btnSaveDialog" Click="btnSaveDialog_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Classes="primaryAction" Height="48">
+                            <Button.Background>
+                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                    <GradientStop Offset="0" Color="#006c49"/><GradientStop Offset="1" Color="#10b981"/>
+                                </LinearGradientBrush>
+                            </Button.Background>
+                            <TextBlock Text="Save Client"/>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
