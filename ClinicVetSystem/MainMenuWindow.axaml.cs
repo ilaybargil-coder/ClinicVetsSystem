@@ -87,6 +87,7 @@ public partial class MainMenuWindow : Window
     private void btnPets_Click(object sender, RoutedEventArgs e) { /* SetActiveTab("Pets"); */ }
     private void btnVisits_Click(object sender, RoutedEventArgs e) { /* SetActiveTab("Visits"); */ }
 
+    private void BtnCalender_OnClick_Click(object? sender, RoutedEventArgs e) { /* SetActiveTab("Visits"); */ }
     // התנתקות
     private void btnLogout_Click(object sender, RoutedEventArgs e)
     {
@@ -94,4 +95,5 @@ public partial class MainMenuWindow : Window
         loginWindow.Show();
         this.Close();
     }
+    
 }
