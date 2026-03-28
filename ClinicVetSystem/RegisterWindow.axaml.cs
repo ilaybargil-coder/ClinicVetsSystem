@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using ClinicVetsSystem.Models;
@@ -15,9 +16,35 @@ public partial class RegisterWindow : Window
         InitializeComponent();
     }
 
+    // ─── Custom Window Chrome Logic ──────────────────────────────────────────
+
+    private void TitleBar_PointerPressed(object sender, PointerPressedEventArgs e)
+    {
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            this.BeginMoveDrag(e);
+        }
+    }
+
+    private void Minimize_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void Maximize_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState == WindowState.Maximized 
+            ? WindowState.Normal 
+            : WindowState.Maximized;
+    }
+
+    private void Close_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
     // ─── Validation Methods ───────────────────────────────────────────────────
 
-    // שם משתמש: 6-8 תווים, מקסימום 2 ספרות, השאר אותיות אנגלית בלבד
     private (bool valid, string error) ValidateUsername(string username)
     {
         if (username.Length < 6 || username.Length > 8)
@@ -33,7 +60,6 @@ public partial class RegisterWindow : Window
         return (true, "");
     }
 
-    // סיסמה: 8-10 תווים, לפחות אות אחת, בדיוק ספרה אחת, תו מיוחד אחד ($,#,!,.)
     private (bool valid, string error) ValidatePassword(string password)
     {
         if (password.Length < 8 || password.Length > 10)
@@ -59,7 +85,6 @@ public partial class RegisterWindow : Window
         return (true, "");
     }
 
-    // מספר עובד: בדיוק 4 ספרות
     private (bool valid, string error) ValidateEmployeeNumber(string empNum)
     {
         if (!Regex.IsMatch(empNum, @"^\d{4}$"))
@@ -68,7 +93,6 @@ public partial class RegisterWindow : Window
         return (true, "");
     }
 
-    // ת"ז: בדיוק 9 ספרות
     private (bool valid, string error) ValidateId(string id)
     {
         if (!Regex.IsMatch(id, @"^\d{9}$"))
@@ -77,7 +101,6 @@ public partial class RegisterWindow : Window
         return (true, "");
     }
 
-    // אימייל: פורמט תקני עם @
     private (bool valid, string error) ValidateEmail(string email)
     {
         if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
@@ -107,7 +130,6 @@ public partial class RegisterWindow : Window
         string email        = txtEmail.Text?.Trim() ?? "";
         string role         = (cmbRole.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "";
 
-        // Validate all fields
         bool isValid = true;
 
         var (usernameOk, usernameErr) = ValidateUsername(username);
@@ -139,9 +161,8 @@ public partial class RegisterWindow : Window
 
         if (!isValid) return;
 
-        // All validations passed — insert to Supabase
         btnRegister.IsEnabled = false;
-        HideError(lblMessage);
+        lblMessage.IsVisible = false; // הסתרת הודעה קודמת אם הייתה
 
         try
         {
@@ -152,18 +173,21 @@ public partial class RegisterWindow : Window
                 EmployeeNumber = int.Parse(employeeNum),
                 Email          = email,
                 Role           = role
+                // הערה: שדה ה-Id הוסר כאן אם המודל Staff תלוי ב-Guid/Auto-increment ב-Supabase
+                // אם אתה שומר את תעודת הזהות (id) בתוך שדה ה-Id, הוסף: Id = id,
             };
 
             await SupabaseService.Client!
                 .From<Staff>()
                 .Insert(newStaff);
 
-            // Success!
-            lblMessage.Foreground = Brushes.LightGreen;
+            // הצלחה
+            lblMessage.Foreground = SolidColorBrush.Parse("#006c49"); // ירוק הצלחה תואם עיצוב
+            lblMessage.Background = SolidColorBrush.Parse("#d1fae5"); // ירוק בהיר לרקע
             lblMessage.Text = "✓ העובד נרשם בהצלחה! ניתן להתחבר עכשיו.";
             lblMessage.IsVisible = true;
 
-            // Clear form
+            // איפוס טופס
             txtUsername.Text       = "";
             txtPassword.Text       = "";
             txtEmployeeNumber.Text = "";
@@ -173,7 +197,8 @@ public partial class RegisterWindow : Window
         }
         catch (Exception ex)
         {
-            lblMessage.Foreground = Brushes.Red;
+            lblMessage.Foreground = SolidColorBrush.Parse("#ba1a1a"); // חזרה לאדום
+            lblMessage.Background = SolidColorBrush.Parse("#1Affdad6");
             lblMessage.Text = ex.Message.Contains("duplicate")
                 ? "שגיאה: שם משתמש, מספר עובד או אימייל כבר קיימים במערכת."
                 : $"שגיאת שרת: {ex.Message}";
@@ -187,6 +212,7 @@ public partial class RegisterWindow : Window
 
     private void btnBack_Click(object sender, RoutedEventArgs e)
     {
+        // כיוון ש-MainWindow נשאר פתוח ברקע (הוא זה שפתח אותנו), מספיק לסגור את החלון הנוכחי
         this.Close();
     }
 }
