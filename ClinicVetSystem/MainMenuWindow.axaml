@@ -409,6 +409,7 @@
             </ScrollViewer>
 
             <local:CustomersView x:Name="CustomersPanel" Grid.Row="1" IsVisible="False" />
+            <local:PetsView x:Name="PetsPanel" Grid.Row="1" IsVisible="False" />
 
         </Grid>
     </Grid>
