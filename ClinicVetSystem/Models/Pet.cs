@@ -28,6 +28,9 @@ public class Pet : BaseModel
     [Column("last_vaccine_date")]
     public DateOnly? LastVaccineDate { get; set; }
 
+    [Column("chip_number")]
+    public string? ChipNumber { get; set; }
+
     [Column("created_at")]
     public DateTime? CreatedAt { get; set; }
 }
