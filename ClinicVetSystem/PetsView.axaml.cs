@@ -20,6 +20,7 @@ public partial class PetsView : UserControl
     private bool _isEditMode = false;
     private int _editingPetId = 0;
     private int _pendingDeleteId = 0;
+    private string _currentFilterCustomerId = "";
 
     public PetsView()
     {
@@ -70,17 +71,43 @@ public partial class PetsView : UserControl
 
         var filtered = _allPets.AsEnumerable();
 
+        if (!string.IsNullOrEmpty(_currentFilterCustomerId))
+            filtered = filtered.Where(p => p.OwnerId == _currentFilterCustomerId);
+
         if (!string.IsNullOrEmpty(query))
             filtered = filtered.Where(p =>
                 p.Name.ToLower().Contains(query) ||
-                (p.ChipNumber?.Contains(query) ?? false));
+                (p.ChipNumber?.ToLower().Contains(query) ?? false));
 
         if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All")
             filtered = filtered.Where(p => p.PetType == typeFilter);
 
+        var filteredList = filtered.ToList();
         _displayedPets.Clear();
-        foreach (var row in filtered) _displayedPets.Add(row);
-        lblPetCount.Text = $"Showing {_displayedPets.Count} pets";
+        foreach (var row in filteredList) _displayedPets.Add(row);
+
+        if (!string.IsNullOrEmpty(_currentFilterCustomerId))
+        {
+            var ownerName = _allCustomers.FirstOrDefault(c => c.Id == _currentFilterCustomerId)?.FullName ?? _currentFilterCustomerId;
+            lblPetCount.Text = $"Showing {filteredList.Count} pets (Filtered by: {ownerName})";
+        }
+        else
+        {
+            lblPetCount.Text = $"Showing {filteredList.Count} pets";
+        }
+    }
+
+    public void FilterByCustomer(string customerId)
+    {
+        _currentFilterCustomerId = customerId;
+        txtSearch.Text = "";
+        RefreshDisplay();
+    }
+
+    public void ClearFilter()
+    {
+        _currentFilterCustomerId = "";
+        RefreshDisplay();
     }
 
     private void txtSearch_TextChanged(object? sender, TextChangedEventArgs e) => RefreshDisplay();
@@ -99,11 +126,8 @@ public partial class PetsView : UserControl
         _editingPetId  = p?.Id ?? 0;
         lblDialogTitle.Text = _isEditMode ? "Edit Pet" : "Add New Pet";
 
-        // Pet types from DB
         cbDialogPetType.ItemsSource = _allPetTypes.Select(t => t.Name).ToList();
-
-        // Owners: display name, store ID via OwnerItem
-        cbDialogOwner.ItemsSource = _allCustomers.Select(c => new OwnerItem(c.Id, c.FullName)).ToList();
+        cbDialogOwner.ItemsSource   = _allCustomers.Select(c => new OwnerItem(c.Id, c.FullName)).ToList();
 
         if (_isEditMode && p != null)
         {
@@ -115,8 +139,9 @@ public partial class PetsView : UserControl
                 ? new DateTime(p.LastVaccineDate.Value.Year, p.LastVaccineDate.Value.Month, p.LastVaccineDate.Value.Day)
                 : null;
             txtDialogChip.Text = p.ChipNumber ?? "";
-            var ownerIdx = _allCustomers.FindIndex(c => c.Id == p.OwnerId);
-            cbDialogOwner.SelectedIndex = ownerIdx >= 0 ? ownerIdx : -1;
+
+            var ownerItems = cbDialogOwner.ItemsSource as List<OwnerItem>;
+            cbDialogOwner.SelectedItem = ownerItems?.FirstOrDefault(o => o.Id == p.OwnerId);
         }
         else
         {
@@ -127,6 +152,12 @@ public partial class PetsView : UserControl
             dpDialogVaccineDate.SelectedDate = null;
             txtDialogChip.Text = "";
             cbDialogOwner.SelectedIndex = -1;
+
+            if (!string.IsNullOrEmpty(_currentFilterCustomerId))
+            {
+                var ownerItems = cbDialogOwner.ItemsSource as List<OwnerItem>;
+                cbDialogOwner.SelectedItem = ownerItems?.FirstOrDefault(o => o.Id == _currentFilterCustomerId);
+            }
         }
 
         lblDialogError.IsVisible = false;
@@ -164,7 +195,7 @@ public partial class PetsView : UserControl
             if (birthDate.Year < 2000)
             { ShowError("תאריך לידה לא יכול להיות לפני שנת 2000."); return; }
 
-            // 5. Owner — must select existing customer (ID stored via OwnerItem)
+            // 5. Owner — must select existing customer
             if (cbDialogOwner.SelectedItem is not OwnerItem owner)
             { ShowError("יש לשייך את החיה ללקוח קיים."); return; }
 
@@ -189,7 +220,6 @@ public partial class PetsView : UserControl
 
             if (_isEditMode)
             {
-                // Fix #3: proper update — no duplicates
                 await SupabaseService.Client!.From<Pet>()
                     .Where(x => x.Id == _editingPetId)
                     .Set(x => x.Name!,           name)
@@ -218,7 +248,7 @@ public partial class PetsView : UserControl
         catch (Exception ex) { ShowError(ex.Message); }
     }
 
-    private void ShowError(string msg) { lblDialogError.Text = msg; lblDialogError.IsVisible = true; }
+    private void ShowError(string msg) { lblDialogError.Text = "⚠ " + msg; lblDialogError.IsVisible = true; }
 
     // ─── Delete with confirmation ─────────────────────────────────────────────
 
@@ -322,7 +352,6 @@ public class PetRow
     public string WeightFormatted  => $"{Weight:F1} kg";
     public string ChipDisplay      => ChipNumber ?? "—";
 
-    // Age calculated from BirthDate
     public string AgeDisplay
     {
         get
@@ -338,7 +367,6 @@ public class PetRow
         }
     }
 
-    // Vaccine alert: red if > 1 year ago
     public bool IsVaccineOverdue =>
         LastVaccineDate.HasValue &&
         LastVaccineDate.Value < DateOnly.FromDateTime(DateTime.Today.AddYears(-1));
@@ -357,7 +385,6 @@ public class PetRow
         }
     }
 
-    // Pet type with icon
     public string PetTypeDisplay => PetType switch
     {
         "כלב"   => "🐶 כלב",

@@ -13,18 +13,13 @@
 
     <Window.Styles>
         <Style Selector="TextBox, ComboBox">
-            <Setter Property="Background" Value="#ffffff"/>
+            <Setter Property="Background" Value="#f2f4f6"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0,0,0,2"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="40,14,16,14"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Foreground" Value="#191c1e"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.3"/>
-                </Transitions>
-            </Setter>
         </Style>
         <Style Selector="ComboBox">
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
@@ -39,14 +34,6 @@
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="16"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.2"/>
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
-            <Setter Property="Opacity" Value="0.85"/>
         </Style>
 
         <Style Selector="Button.outline">
@@ -59,16 +46,6 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Padding" Value="32,12"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.3"/>
-                    <BrushTransition Property="Foreground" Duration="0:0:0.3"/>
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Button.outline:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="White"/>
-            <Setter Property="Foreground" Value="#006c49"/>
         </Style>
 
         <Style Selector="Button.chromeBtn">
@@ -79,13 +56,11 @@
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Cursor" Value="Hand"/>
         </Style>
-        <Style Selector="Button.chromeBtn:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#e0e3e5"/>
-            <Setter Property="Foreground" Value="#191c1e"/>
-        </Style>
-        <Style Selector="Button.chromeBtn.closeBtn:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#ba1a1a"/>
-            <Setter Property="Foreground" Value="White"/>
+        
+        <Style Selector="Border.glassCard">
+            <Setter Property="Background" Value="#ffffff"/>
+            <Setter Property="CornerRadius" Value="32"/>
+            <Setter Property="BoxShadow" Value="0 10 30 0 #08005236"/>
         </Style>
 
         <Style Selector="TextBlock.errorLabel">
@@ -97,7 +72,6 @@
     </Window.Styles>
 
     <Grid RowDefinitions="Auto, *">
-        
         <Grid Grid.Row="0" Height="40" Background="Transparent" PointerPressed="TitleBar_PointerPressed" ZIndex="20">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,8,0" Spacing="4">
                 <Button Classes="chromeBtn" Click="Minimize_Click"><PathIcon Data="M20,14H4V10H20" Width="12" Height="12"/></Button>
@@ -107,7 +81,6 @@
         </Grid>
 
         <Grid Grid.Row="1" Margin="20" HorizontalAlignment="Center" VerticalAlignment="Center">
-            
             <Border MaxWidth="1000" Width="1000" MinHeight="680" Height="680" 
                     CornerRadius="32" Background="#ffffff" ClipToBounds="True" BoxShadow="0 24 48 0 #0F005236">
                 
@@ -116,7 +89,6 @@
                     <Panel x:Name="LeftPanel" Grid.Column="0" Background="#ffffff">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <StackPanel Margin="48,32" MaxWidth="380" HorizontalAlignment="Center">
-                                
                                 <TextBlock Text="Register Staff" FontSize="32" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
                                 <TextBlock Text="Create a new clinician or administrative profile." FontSize="14" Foreground="#3c4a42" Margin="0,0,0,24"/>
 
@@ -134,16 +106,14 @@
                                 <TextBlock Text="PASSWORD" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
                                 <Panel>
                                     <PathIcon Data="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.89,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
-                                    <TextBox Name="txtRegPassword" PasswordChar="•" Watermark="••••••••••••"/>
-                                </Panel>
+                                    <TextBox Name="txtRegPassword" PasswordChar="•" Watermark="••••••••••••">
+                                        <TextBox.InnerRightContent>
+                                            <Button Classes="chromeBtn" Tag="{Binding $parent[TextBox]}" Click="TogglePassword_Click" Margin="0,0,4,0">
+                                                <PathIcon Data="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17C8.13,17 4.79,14.73 3,11.5C4.79,8.27 8.13,6 12,6C15.87,6 19.21,8.27 21,11.5C19.21,14.73 15.87,17 12,17M12,4.5C7,4.5 2.73,7.61 1,11.5C2.73,15.39 7,18.5 12,18.5C17,18.5 21.27,15.39 23,11.5C21.27,7.61 17,4.5 12,4.5Z" Width="18" Height="18"/>
+                                            </Button>
+                                        </TextBox.InnerRightContent>
+                                    </TextBox>                                </Panel>
                                 <TextBlock Name="lblPasswordError" Classes="errorLabel" IsVisible="False"/>
-
-                                <TextBlock Text="EMPLOYEE NUMBER" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
-                                <Panel>
-                                    <PathIcon Data="M14,19H18V5H14M6,19H10V5H6M19,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
-                                    <TextBox Name="txtRegEmpNum" Watermark="1234"/>
-                                </Panel>
-                                <TextBlock Name="lblEmpNumError" Classes="errorLabel" IsVisible="False"/>
 
                                 <TextBlock Text="ID NUMBER" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
                                 <Panel>
@@ -173,7 +143,7 @@
                                             <GradientStop Offset="1" Color="#10b981"/>
                                         </LinearGradientBrush>
                                     </Button.Background>
-                                    <TextBlock Text="Complete Registration" VerticalAlignment="Center"/>
+                                    <TextBlock Text="Register &amp; Verify Email" VerticalAlignment="Center"/>
                                 </Button>
                             </StackPanel>
                         </ScrollViewer>
@@ -183,25 +153,33 @@
                         <StackPanel Margin="48,80" MaxWidth="380" HorizontalAlignment="Center" VerticalAlignment="Center">
                             
                             <TextBlock Text="Welcome Back" FontSize="36" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
-                            <TextBlock Text="Please enter your clinician credentials to access the system." FontSize="15" Foreground="#3c4a42" Margin="0,0,0,40"/>
+                            <TextBlock Text="Please enter your clinician credentials to access the system." TextWrapping="Wrap" FontSize="15" Foreground="#3c4a42" Margin="0,0,0,40"/>
 
                             <Border Background="#1Affdad6" CornerRadius="8" Margin="0,0,0,16" IsVisible="{Binding #lblLoginMessage.IsVisible}">
                                 <TextBlock Name="lblLoginMessage" Foreground="#ba1a1a" Padding="12" FontSize="13" FontWeight="Medium" IsVisible="False" TextWrapping="Wrap"/>
                             </Border>
 
-                            <TextBlock Text="User Name" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,8"/>
+                            <TextBlock Text="USERNAME" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,8"/>
                             <Panel Margin="0,0,0,24">
                                 <PathIcon Data="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
-                                <TextBox Name="txtLoginEmail" Watermark="Yochayab"/>
+                                <TextBox Name="txtLoginUsername" Watermark="e.g. jsmith12"/>
                             </Panel>
 
                             <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-                                <TextBlock Grid.Column="0" Text="PASSWORD" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1"/>
-                                <TextBlock Grid.Column="1" Text="Forgot password?" FontSize="11" FontWeight="Bold" Foreground="#006c49" Cursor="Hand"/>
+                                <TextBlock Grid.Column="0" Text="PASSWORD" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" VerticalAlignment="Center"/>
+                                <Button Grid.Column="1" Background="Transparent" Padding="0" Cursor="Hand" Click="btnForgotPassword_Click">
+                                    <TextBlock Text="Forgot password?" FontSize="11" FontWeight="Bold" Foreground="#006c49" />
+                                </Button>
                             </Grid>
                             <Panel Margin="0,0,0,40">
                                 <PathIcon Data="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.89,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
-                                <TextBox Name="txtLoginPassword" PasswordChar="•" Watermark="••••••••••••"/>
+                                <TextBox Name="txtLoginPassword" PasswordChar="•" Watermark="••••••••••••">
+                                    <TextBox.InnerRightContent>
+                                        <Button Classes="chromeBtn" Tag="{Binding $parent[TextBox]}" Click="TogglePassword_Click" Margin="0,0,4,0">
+                                            <PathIcon Data="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17C8.13,17 4.79,14.73 3,11.5C4.79,8.27 8.13,6 12,6C15.87,6 19.21,8.27 21,11.5C19.21,14.73 15.87,17 12,17M12,4.5C7,4.5 2.73,7.61 1,11.5C2.73,15.39 7,18.5 12,18.5C17,18.5 21.27,15.39 23,11.5C21.27,7.61 17,4.5 12,4.5Z" Width="18" Height="18"/>
+                                        </Button>
+                                    </TextBox.InnerRightContent>
+                                </TextBox>
                             </Panel>
 
                             <Button Name="btnLoginSubmit" Classes="primary" Height="52" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="btnLoginSubmit_Click">
@@ -233,9 +211,7 @@
 
                         <Grid Margin="40">
                             <StackPanel x:Name="OverlayLeftContent" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <StackPanel.Transitions>
-                                    <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.4"/></Transitions>
-                                </StackPanel.Transitions>
+                                <StackPanel.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.4"/></Transitions></StackPanel.Transitions>
                                 <TextBlock Text="🐾" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,24"/>
                                 <TextBlock Text="Restoring Vitality" FontSize="36" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,16"/>
                                 <TextBlock Text="New to the greenhouse? Register your staff profile to start optimizing pet care." 
@@ -244,9 +220,7 @@
                             </StackPanel>
 
                             <StackPanel x:Name="OverlayRightContent" VerticalAlignment="Center" HorizontalAlignment="Center" Opacity="0" IsHitTestVisible="False">
-                                <StackPanel.Transitions>
-                                    <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.4"/></Transitions>
-                                </StackPanel.Transitions>
+                                <StackPanel.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.4"/></Transitions></StackPanel.Transitions>
                                 <TextBlock Text="🩺" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,24"/>
                                 <TextBlock Text="Already a Member?" FontSize="36" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,16"/>
                                 <TextBlock Text="Welcome back! Please sign in to access your dashboard and daily schedule." 
@@ -257,6 +231,81 @@
                     </Border>
                     
                 </Grid>
+            </Border>
+        </Grid>
+        
+        <Grid Name="ModalOverlay" Grid.RowSpan="2" Background="#C0000000" IsVisible="False" ZIndex="100">
+            <Button Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btnCancelModal_Click"/>
+            
+            <Border Name="pnlRequestReset" Classes="glassCard" Width="400" Padding="40" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="False">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Reset Password" FontSize="24" FontWeight="Black" Foreground="#191c1e" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Enter your registered email address to receive a 6-digit verification code." FontSize="14" Foreground="#64748b" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,16"/>
+                    <TextBox Name="txtResetEmail" Watermark="e.g. name@clinic.com" Background="#f2f4f6" BorderThickness="0" CornerRadius="8" Padding="16,12"/>
+                    <TextBlock Name="lblResetError" Classes="errorLabel" IsVisible="False"/>
+                    
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,16,0,0">
+                        <Button Grid.Column="0" Content="Cancel" Click="btnCancelModal_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#f1f5f9" Foreground="#475569" CornerRadius="8" Height="40"/>
+                        <Button Grid.Column="1" Content="Send OTP" Click="btnSendResetOtp_Click" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Height="40">
+                            <Button.Background>
+                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%"><GradientStop Offset="0" Color="#006c49"/><GradientStop Offset="1" Color="#10b981"/></LinearGradientBrush>
+                            </Button.Background>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Name="pnlVerifyOtp" Classes="glassCard" Width="400" Padding="40" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="False">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Verify Email" FontSize="24" FontWeight="Black" Foreground="#191c1e" HorizontalAlignment="Center"/>
+                    <TextBlock Text="We've sent a 6-digit code to your email. Enter it below to continue." FontSize="14" Foreground="#64748b" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,16"/>
+                    <TextBox Name="txtOtpCode" Watermark="000000" MaxLength="6" TextAlignment="Center" FontSize="24" FontWeight="Bold" LetterSpacing="8" Background="#f2f4f6" BorderThickness="0" CornerRadius="8" Padding="16,12"/>
+                    <TextBlock Name="lblOtpError" Classes="errorLabel" IsVisible="False" HorizontalAlignment="Center"/>
+                    
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,16,0,0">
+                        <Button Grid.Column="0" Content="Cancel" Click="btnCancelModal_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#f1f5f9" Foreground="#475569" CornerRadius="8" Height="40"/>
+                        <Button Grid.Column="1" Content="Verify Code" Click="btnVerifyOtp_Click" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Height="40">
+                            <Button.Background>
+                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%"><GradientStop Offset="0" Color="#006c49"/><GradientStop Offset="1" Color="#10b981"/></LinearGradientBrush>
+                            </Button.Background>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Name="pnlNewPassword" Classes="glassCard" Width="400" Padding="40" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="False">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Create New Password" FontSize="24" FontWeight="Black" Foreground="#191c1e" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Your new password must be 8-10 characters and include a number, letter, and a special character ($#!)." FontSize="12" Foreground="#64748b" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,8"/>
+                    
+                    <TextBlock Text="NEW PASSWORD" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,-12"/>
+                    <TextBox Name="txtNewPassword" PasswordChar="•" Watermark="••••••••••••" Background="#f2f4f6" BorderThickness="0" CornerRadius="8" Padding="16,12">
+                        <TextBox.InnerRightContent>
+                            <Button Classes="chromeBtn" Tag="{Binding $parent[TextBox]}" Click="TogglePassword_Click" Margin="0,0,4,0">
+                                <PathIcon Data="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17C8.13,17 4.79,14.73 3,11.5C4.79,8.27 8.13,6 12,6C15.87,6 19.21,8.27 21,11.5C19.21,14.73 15.87,17 12,17M12,4.5C7,4.5 2.73,7.61 1,11.5C2.73,15.39 7,18.5 12,18.5C17,18.5 21.27,15.39 23,11.5C21.27,7.61 17,4.5 12,4.5Z" Width="18" Height="18"/>
+                            </Button>
+                        </TextBox.InnerRightContent>
+                    </TextBox>
+                    
+                    <TextBlock Text="CONFIRM PASSWORD" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,-12"/>
+                    <TextBox Name="txtConfirmNewPassword" PasswordChar="•" Watermark="••••••••••••" Background="#f2f4f6" BorderThickness="0" CornerRadius="8" Padding="16,12">
+                        <TextBox.InnerRightContent>
+                            <Button Classes="chromeBtn" Tag="{Binding $parent[TextBox]}" Click="TogglePassword_Click" Margin="0,0,4,0">
+                                <PathIcon Data="M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9M12,17C8.13,17 4.79,14.73 3,11.5C4.79,8.27 8.13,6 12,6C15.87,6 19.21,8.27 21,11.5C19.21,14.73 15.87,17 12,17M12,4.5C7,4.5 2.73,7.61 1,11.5C2.73,15.39 7,18.5 12,18.5C17,18.5 21.27,15.39 23,11.5C21.27,7.61 17,4.5 12,4.5Z" Width="18" Height="18"/>
+                            </Button>
+                        </TextBox.InnerRightContent>
+                    </TextBox>                    
+                    <TextBlock Name="lblNewPasswordError" Classes="errorLabel" IsVisible="False"/>
+                    
+                    <Grid ColumnDefinitions="*, *" ColumnSpacing="12" Margin="0,16,0,0">
+                        <Button Grid.Column="0" Content="Cancel" Click="btnCancelModal_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#f1f5f9" Foreground="#475569" CornerRadius="8" Height="40"/>
+                        <Button Grid.Column="1" Content="Update Password" Click="btnSaveNewPassword_Click" Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Height="40">
+                            <Button.Background>
+                                <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%"><GradientStop Offset="0" Color="#006c49"/><GradientStop Offset="1" Color="#10b981"/></LinearGradientBrush>
+                            </Button.Background>
+                        </Button>
+                    </Grid>
+                </StackPanel>
             </Border>
         </Grid>
     </Grid>
