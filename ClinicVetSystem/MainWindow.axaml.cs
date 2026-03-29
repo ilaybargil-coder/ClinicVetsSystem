@@ -98,7 +98,7 @@ public partial class MainWindow : Window
 
             if (staffMember != null)
             {
-                var mainMenu = new ClinicVetsSystem.MainMenuWindow(staffMember);
+                var mainMenu = new MainMenuWindow(staffMember);
                 mainMenu.Show();
                 this.Close();
             }

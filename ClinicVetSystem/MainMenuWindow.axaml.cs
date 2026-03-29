@@ -3,23 +3,22 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using ClinicVetsSystem.Models;
 
-namespace ClinicVetsSystem; // שים לב! הוספתי כאן את ה-S הקריטית
+namespace ClinicVetsSystem;
 
 public partial class MainMenuWindow : Window
 {
     private readonly Staff _loggedInStaff;
+    private Button? _activeNavBtn;
 
     public MainMenuWindow(Staff staff)
     {
         InitializeComponent();
         _loggedInStaff = staff;
-        
+
         SetupMenuForRole();
-        SetActiveTab("Dashboard"); // קביעת הטאב ההתחלתי שיוצג
     }
 
-    // ─── Custom Window Chrome Logic ──────────────────────────────────────────
-
+    // --- כפתורי כותרת ---
     private void TitleBar_PointerPressed(object sender, PointerPressedEventArgs e)
     {
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -30,14 +29,14 @@ public partial class MainMenuWindow : Window
     private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
-
-    // ─── Role Authorization & SPA Routing ────────────────────────────────────
-
+    // --- הגדרת תפריט לפי תפקיד ---
     private void SetupMenuForRole()
     {
-        lblGreeting.Text = $"Morning, {_loggedInStaff.Username}";
-        lblTopName.Text = _loggedInStaff.Username;
-        lblTopRole.Text = _loggedInStaff.Role.ToUpper();
+        if (this.FindControl<TextBlock>("lblGreeting") != null)
+            this.FindControl<TextBlock>("lblGreeting")!.Text = $"שלום, {_loggedInStaff.Username}";
+
+        // אתחול כפתור פעיל
+        _activeNavBtn = this.FindControl<Button>("btnNavDashboard");
 
         // הסתרת הכפתורים הנכונים לפי תפקיד
         if (_loggedInStaff.Role == "מזכיר/ה")
@@ -52,57 +51,81 @@ public partial class MainMenuWindow : Window
         }
     }
 
-    private void SetActiveTab(string tabName)
+    // --- ניווט ---
+    private void SetActiveNav(object sender)
     {
-        // 1. איפוס הסגנון של כל כפתורי הניווט (מסיר את המחלקה active)
-        btnNavDashboard.Classes.Remove("active");
-        btnNavCustomers.Classes.Remove("active");
-        btnNavPets.Classes.Remove("active");
+        if (_activeNavBtn != null)
+            _activeNavBtn.Classes.Set("active", false);
+        _activeNavBtn = sender as Button;
+        _activeNavBtn?.Classes.Set("active", true);
+    }
 
-        // 2. הסתרת כל הפאנלים
-        DashboardPanel.IsVisible = false;
+    private void HideAllPanels()
+    {
+        var mainContent = this.FindControl<ContentControl>("MainContentRegion");
+        var dashboard = this.FindControl<ScrollViewer>("DashboardPanel");
+        if (mainContent != null) mainContent.IsVisible = false;
+        if (dashboard != null) dashboard.IsVisible = false;
         CustomersPanel.IsVisible = false;
         PetsPanel.IsVisible = false;
+    }
 
-        // 3. הפעלת הפאנל והכפתור הרלוונטי בלבד
-        switch (tabName)
+    private void NavigateTo(UserControl view, object sender)
+    {
+        HideAllPanels();
+        SetActiveNav(sender);
+        var mainContent = this.FindControl<ContentControl>("MainContentRegion");
+        if (mainContent != null)
         {
-            case "Dashboard":
-                btnNavDashboard.Classes.Add("active");
-                DashboardPanel.IsVisible = true;
-                break;
-            case "Customers":
-                btnNavCustomers.Classes.Add("active");
-                CustomersPanel.IsVisible = true;
-                _ = CustomersPanel.LoadDataAsync();
-                break;
-            case "Pets":
-                btnNavPets.Classes.Add("active");
-                PetsPanel.IsVisible = true;
-                _ = PetsPanel.LoadDataAsync();
-                break;
+            mainContent.Content = view;
+            mainContent.IsVisible = true;
         }
     }
 
-    // ─── Events ──────────────────────────────────────────────────────────────
-
-    private void btnNavDashboard_Click(object sender, RoutedEventArgs e) => SetActiveTab("Dashboard");
-    private void btnNavCustomers_Click(object sender, RoutedEventArgs e) => SetActiveTab("Customers");
-    private void btnPets_Click(object sender, RoutedEventArgs e) => SetActiveTab("Pets");
-    private void btnVisits_Click(object sender, RoutedEventArgs e) { /* יפותח בהמשך */ }
-    private void BtnCalender_OnClick_Click(object? sender, RoutedEventArgs e) { /* יפותח בהמשך */ }
-
-    // הפונקציה שהייתה חסרה וגרמה לשגיאה שצילמת!
-    public void GoToPetsForCustomer(string customerId)
+    private void btnNavDashboard_Click(object sender, RoutedEventArgs e)
     {
-        SetActiveTab("Pets");
-        // בעתיד נוסיף כאן פקודה שתסנן את חיות המחמד לפי customerId
+        HideAllPanels();
+        SetActiveNav(sender);
+        var dashboard = this.FindControl<ScrollViewer>("DashboardPanel");
+        if (dashboard != null) dashboard.IsVisible = true;
+    }
+
+    private void btnNavCustomers_Click(object sender, RoutedEventArgs e)
+    {
+        HideAllPanels();
+        SetActiveNav(sender);
+        CustomersPanel.IsVisible = true;
+        _ = CustomersPanel.LoadDataAsync();
+    }
+
+    private void btnPets_Click(object sender, RoutedEventArgs e)
+    {
+        HideAllPanels();
+        SetActiveNav(sender);
+        PetsPanel.IsVisible = true;
+        _ = PetsPanel.LoadDataAsync();
+    }
+
+    private void BtnCalender_OnClick_Click(object? sender, RoutedEventArgs e) { }
+
+    private void btnInventory_Click(object? sender, RoutedEventArgs e) => NavigateTo(new InventoryView(), sender!);
+
+    private void btnVisits_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_loggedInStaff.Role == "וטרינר/ית")
+            NavigateTo(new VisitsView(_loggedInStaff), sender!);
     }
 
     private void btnLogout_Click(object sender, RoutedEventArgs e)
     {
-        var loginWindow = new MainWindow();
-        loginWindow.Show();
+        new MainWindow().Show();
         this.Close();
+    }
+
+    // מעבר לחיות המחמד עם פילטר לקוח ספציפי
+    public void GoToPetsForCustomer(string customerId)
+    {
+        btnPets_Click(btnNavPets, null!);
+        // בעתיד נוסיף כאן פקודה שתסנן את חיות המחמד לפי customerId
     }
 }

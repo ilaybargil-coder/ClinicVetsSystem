@@ -1,6 +1,6 @@
-using System;
 using Postgrest.Attributes;
 using Postgrest.Models;
+using System;
 
 namespace ClinicVetsSystem.Models;
 
@@ -33,4 +33,8 @@ public class Pet : BaseModel
 
     [Column("created_at")]
     public DateTime? CreatedAt { get; set; }
+
+    // מאפיין עזר להתראה (לא נשמר ב-DB)
+    public bool NeedsVaccine => LastVaccineDate == null ||
+        (DateTime.Now - LastVaccineDate.Value.ToDateTime(TimeOnly.MinValue)).TotalDays > 365;
 }

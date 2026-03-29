@@ -7,9 +7,9 @@ namespace ClinicVetsSystem.Models;
 [Table("visit_medications")]
 public class VisitMedication : BaseModel
 {
-    [PrimaryKey("visit_id", true)]
+    [PrimaryKey("visit_id", false)]
     public int VisitId { get; set; }
 
-    [PrimaryKey("medication_id", true)]
+    [PrimaryKey("medication_id", false)]
     public int MedicationId { get; set; }
 }
