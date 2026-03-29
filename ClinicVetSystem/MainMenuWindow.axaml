@@ -1,7 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:ClinicVetsSystem"
-<<<<<<< HEAD
         x:Class="ClinicVetsSystem.MainMenuWindow"
         Title="ClinicVetsSystem - Staff Dashboard"
         Width="1400" Height="900"
@@ -409,7 +408,6 @@
             </ScrollViewer>
 
             <local:CustomersView x:Name="CustomersPanel" Grid.Row="1" IsVisible="False" />
-<<<<<<< HEAD
             <local:PetsView x:Name="PetsPanel" Grid.Row="1" IsVisible="False" />
             <ContentControl Name="MainContentRegion" Grid.Row="1" IsVisible="False"/>
 
