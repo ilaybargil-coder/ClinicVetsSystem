@@ -2,13 +2,13 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using ClinicVetsSystem.Models;
-using System;
 
 namespace ClinicVetsSystem;
 
 public partial class MainMenuWindow : Window
 {
     private readonly Staff _loggedInStaff;
+    private Button? _activeNavBtn;
 
     public MainMenuWindow(Staff staff)
     {
@@ -36,6 +36,9 @@ public partial class MainMenuWindow : Window
         if (this.FindControl<TextBlock>("lblGreeting") != null)
             this.FindControl<TextBlock>("lblGreeting").Text = $"שלום, {_loggedInStaff.Username}";
 
+        // אתחול כפתור פעיל
+        _activeNavBtn = this.FindControl<Button>("btnNavDashboard");
+
         // בדיקה אילו כפתורים להציג
         var btnVisits = this.FindControl<Button>("btnNavVisits");
         if (btnVisits != null)
@@ -43,26 +46,51 @@ public partial class MainMenuWindow : Window
     }
 
     // --- ניווט ---
-    private void btnNavDashboard_Click(object sender, RoutedEventArgs e) 
+    private void SetActiveNav(object sender)
     {
-        // כאן את יכולה להחזיר את התוכן של ה-Dashboard
+        if (_activeNavBtn != null)
+            _activeNavBtn.Classes.Set("active", false);
+        _activeNavBtn = sender as Button;
+        _activeNavBtn?.Classes.Set("active", true);
     }
 
-    private void btnInventory_Click(object? sender, RoutedEventArgs e)
+    private void NavigateTo(UserControl view, object sender)
     {
-        var mainContent = this.FindControl<ContentControl>("MainContentRegion") ?? this.FindControl<ContentControl>("DashboardPanel");
-        if (mainContent != null)
-            mainContent.Content = new InventoryView();
+        SetActiveNav(sender);
+        var mainContent = this.FindControl<ContentControl>("MainContentRegion");
+        var dashboard = this.FindControl<ScrollViewer>("DashboardPanel");
+        if (mainContent != null && dashboard != null)
+        {
+            mainContent.Content = view;
+            mainContent.IsVisible = true;
+            dashboard.IsVisible = false;
+        }
     }
+
+    private void btnNavDashboard_Click(object sender, RoutedEventArgs e)
+    {
+        SetActiveNav(sender);
+        var mainContent = this.FindControl<ContentControl>("MainContentRegion");
+        var dashboard = this.FindControl<ScrollViewer>("DashboardPanel");
+        if (mainContent != null && dashboard != null)
+        {
+            mainContent.IsVisible = false;
+            dashboard.IsVisible = true;
+        }
+    }
+
+    private void btnNavCustomers_Click(object sender, RoutedEventArgs e) { }
+
+    private void btnPets_Click(object sender, RoutedEventArgs e) { }
+
+    private void BtnCalender_OnClick_Click(object sender, RoutedEventArgs e) { }
+
+    private void btnInventory_Click(object? sender, RoutedEventArgs e) => NavigateTo(new InventoryView(), sender!);
 
     private void btnVisits_Click(object? sender, RoutedEventArgs e)
     {
         if (_loggedInStaff.Role == "וטרינר/ית")
-        {
-            var mainContent = this.FindControl<ContentControl>("MainContentRegion") ?? this.FindControl<ContentControl>("DashboardPanel");
-            if (mainContent != null)
-                mainContent.Content = new VisitsView(_loggedInStaff);
-        }
+            NavigateTo(new VisitsView(_loggedInStaff), sender!);
     }
 
     private void btnLogout_Click(object sender, RoutedEventArgs e)

@@ -3,6 +3,7 @@ using Avalonia.Interactivity;
 using ClinicVetsSystem.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace ClinicVetsSystem;
@@ -22,8 +23,13 @@ public partial class VisitsView : UserControl
 
     private async void LoadMedications()
     {
-        var result = await SupabaseService.Client.From<Medication>().Get();
-        lstMedications.ItemsSource = result.Models;
+        if (SupabaseService.Client == null) return;
+        try
+        {
+            var result = await SupabaseService.Client.From<Medication>().Get();
+            lstMedications.ItemsSource = result.Models;
+        }
+        catch { }
     }
 
     private void CalculateTotal_Click(object sender, RoutedEventArgs e)
@@ -38,28 +44,48 @@ public partial class VisitsView : UserControl
 
     private async void CheckVaccinationStatus(int petId)
     {
-        var result = await SupabaseService.Client.From<Pet>().Where(p => p.Id == petId).Get();
-        var pet = result.Models.FirstOrDefault();
-        
-        if (pet != null && pet.NeedsVaccine)
+        if (SupabaseService.Client == null) return;
+        try
         {
-            // הצגת התראה בולטת בממשק
-            lblVaccineWarning.Text = "⚠️ התראה: החיה זקוקה לחיסון שנתי!";
-            lblVaccineWarning.IsVisible = true;
+            var result = await SupabaseService.Client.From<Pet>().Where(p => p.Id == petId).Get();
+            var pet = result.Models.FirstOrDefault();
+            if (pet != null && pet.NeedsVaccine)
+            {
+                lblVaccineWarning.Text = "התראה: החיה זקוקה לחיסון שנתי!";
+                lblVaccineWarning.IsVisible = true;
+            }
         }
+        catch { }
     }
 
     private async void SaveVisit_Click(object sender, RoutedEventArgs e)
     {
-        var total = decimal.Parse(lblTotalPrice.Text.Replace("סה''כ לתשלום: ₪ ", ""));
-        
-        var visit = new Visit {
-            Diagnosis = txtDiagnosis.Text,
-            VetName = _currentVet.Username, // שם הווטרינר המטפל
-            TotalCost = total,
-            VisitDate = DateTime.Now // תאריך ושעה נוכחיים
-        };
+        if (SupabaseService.Client == null) return;
+        try
+        {
+            var totalText = lblTotalPrice.Text?.Replace("סה''כ לתשלום: ₪ ", "") ?? "0";
+            var total = decimal.TryParse(totalText, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed) ? parsed : _baseVisitPrice;
 
-        await SupabaseService.Client.From<Visit>().Insert(visit);
+            var visit = new Visit {
+                PetId = 1, // TODO: replace with actual selected pet
+                VetId = _currentVet.Id,
+                Diagnosis = txtDiagnosis.Text,
+                BaseCost = _baseVisitPrice,
+                TotalCost = total,
+                VisitDate = DateTime.Now
+            };
+            var insertResult = await SupabaseService.Client.From<Visit>().Insert(visit);
+            var savedVisit = insertResult.Models.FirstOrDefault();
+
+            if (savedVisit != null && lstMedications.SelectedItems.Count > 0)
+            {
+                foreach (Medication med in lstMedications.SelectedItems)
+                {
+                    var vm = new VisitMedication { VisitId = savedVisit.Id, MedicationId = med.Id };
+                    await SupabaseService.Client.From<VisitMedication>().Insert(vm);
+                }
+            }
+        }
+        catch { }
     }
 }

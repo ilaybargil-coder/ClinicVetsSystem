@@ -1,8 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:ClinicVetsSystem"
-        xmlns:clinicVetSystem="clr-namespace:ClinicVetSystem"
-        x:Class="ClinicVetSystem.MainMenuWindow"
+        xmlns:clinicVetSystem="clr-namespace:ClinicVetsSystem"
+        x:Class="ClinicVetsSystem.MainMenuWindow"
         Title="ClinicVetsSystem - Staff Dashboard"
         Width="1400" Height="900"
         MinWidth="1100" MinHeight="700"
@@ -409,6 +409,7 @@
             </ScrollViewer>
 
             <local:CustomersView x:Name="CustomersPanel" Grid.Row="1" IsVisible="False" />
+            <ContentControl Name="MainContentRegion" Grid.Row="1" IsVisible="False"/>
 
         </Grid>
     </Grid>

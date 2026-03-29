@@ -1,6 +1,7 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ClinicVetsSystem.InventoryView">
+             x:Class="ClinicVetsSystem.InventoryView"
+             x:CompileBindings="False">
     <Grid RowDefinitions="Auto, *, Auto" Margin="20">
         <TextBlock Grid.Row="0" Text="ניהול מלאי תרופות" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
         
@@ -8,14 +9,12 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="שם תרופה" Binding="{Binding Name}" Width="*"/>
                 <DataGridTextColumn Header="מחיר" Binding="{Binding Price}" Width="100"/>
-                <DataGridTextColumn Header="כמות במלאי" Binding="{Binding StockQuantity}" Width="100"/>
             </DataGrid.Columns>
         </DataGrid>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" Margin="0,20,0,0">
             <TextBox Name="newName" Watermark="שם תרופה" Width="150"/>
             <TextBox Name="newPrice" Watermark="מחיר" Width="80"/>
-            <TextBox Name="newStock" Watermark="כמות" Width="80"/>
             <Button Content="הוסף למלאי" Click="AddMedication_Click" Background="#006c49" Foreground="White"/>
             <Button Content="מחק נבחר" Click="DeleteMedication_Click" Background="#ba1a1a" Foreground="White"/>
         </StackPanel>

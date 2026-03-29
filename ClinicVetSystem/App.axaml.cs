@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
-namespace ClinicVetSystem // ודאי שזה בדיוק כך
+namespace ClinicVetsSystem
 {
     public partial class App : Application
     {

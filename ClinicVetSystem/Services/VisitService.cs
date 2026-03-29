@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ClinicVetsSystem.Models;
 
-namespace ClinicVetSystem.Services
+namespace ClinicVetsSystem.Services
 {
     public static class VisitService
     {
