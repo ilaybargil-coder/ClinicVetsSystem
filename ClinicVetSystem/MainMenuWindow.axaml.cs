@@ -58,10 +58,12 @@ public partial class MainMenuWindow : Window
         // 1. איפוס הסגנון של כל כפתורי הניווט (מסיר את המחלקה active)
         btnNavDashboard.Classes.Remove("active");
         btnNavCustomers.Classes.Remove("active");
-        
+        btnNavPets.Classes.Remove("active");
+
         // 2. הסתרת כל הפאנלים (לוודא שכלום לא מוצג בטעות)
         DashboardPanel.IsVisible = false;
         CustomersPanel.IsVisible = false;
+        PetsPanel.IsVisible = false;
 
         // 3. הפעלת הפאנל והכפתור הרלוונטי בלבד
         switch (tabName)
@@ -73,8 +75,12 @@ public partial class MainMenuWindow : Window
             case "Customers":
                 btnNavCustomers.Classes.Add("active");
                 CustomersPanel.IsVisible = true;
-                // קריאה לרכיב הלקוחות שימשוך נתונים טריים מ-Supabase
-                _ = CustomersPanel.LoadDataAsync(); 
+                _ = CustomersPanel.LoadDataAsync();
+                break;
+            case "Pets":
+                btnNavPets.Classes.Add("active");
+                PetsPanel.IsVisible = true;
+                _ = PetsPanel.LoadDataAsync();
                 break;
         }
     }
@@ -84,7 +90,7 @@ public partial class MainMenuWindow : Window
     private void btnNavCustomers_Click(object sender, RoutedEventArgs e) => SetActiveTab("Customers");
     
     // אלה יפותחו בהמשך כשניצור להם UserControls
-    private void btnPets_Click(object sender, RoutedEventArgs e) { /* SetActiveTab("Pets"); */ }
+    private void btnPets_Click(object sender, RoutedEventArgs e) => SetActiveTab("Pets");
     private void btnVisits_Click(object sender, RoutedEventArgs e) { /* SetActiveTab("Visits"); */ }
 
     private void BtnCalender_OnClick_Click(object? sender, RoutedEventArgs e) { /* SetActiveTab("Visits"); */ }

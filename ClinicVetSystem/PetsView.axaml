@@ -1,0 +1,169 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:ClinicVetsSystem"
+             x:Class="ClinicVetsSystem.PetsView"
+             FontFamily="Inter, sans-serif">
+
+    <UserControl.Styles>
+        <Style Selector="Border.glassCard">
+            <Setter Property="Background" Value="#ffffff"/>
+            <Setter Property="CornerRadius" Value="32"/>
+            <Setter Property="BoxShadow" Value="0 10 30 0 #08005236"/>
+        </Style>
+
+        <Style Selector="TextBox.formInput">
+            <Setter Property="Background" Value="#f2f4f6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16,14"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+        <Style Selector="TextBox.formInput:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#006c49"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+        </Style>
+
+        <Style Selector="ComboBox.formInput">
+            <Setter Property="Background" Value="#f2f4f6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16,14"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+
+        <Style Selector="CalendarDatePicker.formInput">
+            <Setter Property="Background" Value="#f2f4f6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+
+        <Style Selector="Button.primaryAction">
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="48,16,48,48" Spacing="32">
+
+                <!-- Header -->
+                <Grid ColumnDefinitions="*, Auto">
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="Pets Management" FontSize="32" FontWeight="Black" Foreground="#191c1e"/>
+                        <TextBlock Name="lblPetCount" Text="Loading pets..." FontSize="15" Foreground="#64748b"/>
+                    </StackPanel>
+                    <Button Grid.Column="1" Name="btnAddPet" Classes="primaryAction" Padding="24,14" Click="btnAddPet_Click">
+                        <Button.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Offset="0" Color="#006c49"/>
+                                <GradientStop Offset="1" Color="#10b981"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                        <TextBlock Text="+ Add New Pet"/>
+                    </Button>
+                </Grid>
+
+                <!-- Table card -->
+                <Border Classes="glassCard" Padding="32">
+                    <StackPanel Spacing="24">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <TextBox Name="txtSearch" Classes="formInput" Width="380" Watermark="Search by name or chip number..." HorizontalAlignment="Left" TextChanged="txtSearch_TextChanged"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                                <Button Name="btnEdit" IsEnabled="False" Click="btnEdit_Click" Content="✏️ Edit" Background="#eef2ff" Foreground="#4338ca" CornerRadius="12" Padding="16,8"/>
+                                <Button Name="btnDelete" IsEnabled="False" Click="btnDelete_Click" Content="🗑️ Remove" Background="#fef2f2" Foreground="#dc2626" CornerRadius="12" Padding="16,8"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Column headers -->
+                        <Grid ColumnDefinitions="120, 1.2*, 1*, 1*, 80, 1*, 1*" Margin="16,0">
+                            <TextBlock Grid.Column="0" Text="CHIP #"       FontSize="11" FontWeight="Bold" Foreground="#94a3b8" LetterSpacing="1"/>
+                            <TextBlock Grid.Column="1" Text="NAME"         FontSize="11" FontWeight="Bold" Foreground="#94a3b8" LetterSpacing="1"/>
+                            <TextBlock Grid.Column="2" Text="TYPE"         FontSize="11" FontWeight="Bold" Foreground="#94a3b8" LetterSpacing="1"/>
+                            <TextBlock Grid.Column="3" Text="OWNER"        FontSize="11" FontWeight="Bold" Foreground="#94a3b8" LetterSpacing="1"/>
+                            <TextBlock Grid.Column="4" Text="WEIGHT"       FontSize="11" FontWeight="Bold" Foreground="#94a3b8" LetterSpacing="1"/>
+                            <TextBlock Grid.Column="5" Text="BIRTH DATE"   FontSize="11" FontWeight="Bold" Foreground="#94a3b8" LetterSpacing="1"/>
+                            <TextBlock Grid.Column="6" Text="LAST VACCINE" FontSize="11" FontWeight="Bold" Foreground="#94a3b8" LetterSpacing="1"/>
+                        </Grid>
+
+                        <ListBox Name="lstPets" Background="Transparent" BorderThickness="0" SelectionChanged="lstPets_SelectionChanged" MinHeight="400">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="local:PetRow">
+                                    <Grid ColumnDefinitions="120, 1.2*, 1*, 1*, 80, 1*, 1*">
+                                        <TextBlock Grid.Column="0" Text="{Binding ChipDisplay}"        VerticalAlignment="Center" Foreground="#64748b" FontSize="13"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}"              VerticalAlignment="Center" FontWeight="Bold"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding PetType}"           VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding OwnerName}"         VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="4" Text="{Binding WeightFormatted}"   VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="5" Text="{Binding BirthDateFormatted}" VerticalAlignment="Center" FontSize="13"/>
+                                        <TextBlock Grid.Column="6" Text="{Binding VaccineDateFormatted}" VerticalAlignment="Center" FontSize="13" Foreground="#64748b"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <TextBlock Name="lblStatus" Text="Ready." FontSize="12" Foreground="#10b981" HorizontalAlignment="Right"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Add/Edit Modal -->
+        <Grid Name="ModalOverlay" IsVisible="False" Background="#80000000" ZIndex="100">
+            <Button Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Click="btnCancelDialog_Click"/>
+
+            <Border Classes="glassCard" Width="560" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="40">
+                <ScrollViewer MaxHeight="620" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="6">
+                        <TextBlock Name="lblDialogTitle" Text="Add New Pet" FontSize="24" FontWeight="Black" Foreground="#191c1e" Margin="0,0,0,20"/>
+
+                        <TextBlock Text="PET NAME (letters only)" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1"/>
+                        <TextBox Name="txtDialogName" Classes="formInput" Watermark="e.g. Rex"/>
+
+                        <TextBlock Text="PET TYPE" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1" Margin="0,8,0,0"/>
+                        <ComboBox Name="cbDialogPetType" Classes="formInput" PlaceholderText="Select type..."/>
+
+                        <TextBlock Text="WEIGHT (kg, 0.1 – 100)" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1" Margin="0,8,0,0"/>
+                        <TextBox Name="txtDialogWeight" Classes="formInput" Watermark="e.g. 4.5"/>
+
+                        <TextBlock Text="BIRTH DATE" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1" Margin="0,8,0,0"/>
+                        <CalendarDatePicker Name="dpDialogBirthDate" Classes="formInput" Watermark="Select birth date"/>
+
+                        <TextBlock Text="OWNER (existing customer)" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1" Margin="0,8,0,0"/>
+                        <ComboBox Name="cbDialogOwner" Classes="formInput" PlaceholderText="Select owner..."/>
+
+                        <TextBlock Text="LAST VACCINE DATE (optional)" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1" Margin="0,8,0,0"/>
+                        <CalendarDatePicker Name="dpDialogVaccineDate" Classes="formInput" Watermark="Select vaccine date"/>
+
+                        <TextBlock Text="CHIP NUMBER (optional)" FontSize="10" FontWeight="Bold" Foreground="#64748b" LetterSpacing="1" Margin="0,8,0,0"/>
+                        <TextBox Name="txtDialogChip" Classes="formInput" Watermark="e.g. 972000123456789"/>
+
+                        <TextBlock Name="lblDialogError" Foreground="#dc2626" FontSize="12" IsVisible="False" TextWrapping="Wrap" Margin="0,4,0,8"/>
+
+                        <Grid ColumnDefinitions="*, *" Margin="0,16,0,0" ColumnSpacing="16">
+                            <Button Grid.Column="0" Content="Cancel" Click="btnCancelDialog_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="#f1f5f9" Foreground="#475569" CornerRadius="12" Height="48"/>
+                            <Button Grid.Column="1" Name="btnSaveDialog" Click="btnSaveDialog_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Classes="primaryAction" Height="48">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                        <GradientStop Offset="0" Color="#006c49"/>
+                                        <GradientStop Offset="1" Color="#10b981"/>
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                                <TextBlock Text="Save Pet"/>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
