@@ -55,10 +55,12 @@
                 <Border Classes="glassCard" Padding="32">
                     <StackPanel Spacing="24">
                         <Grid ColumnDefinitions="*, Auto">
-                            <TextBox Name="txtSearch" Classes="formInput" Width="350" Watermark="Search name or ID..." HorizontalAlignment="Left" TextChanged="txtSearch_TextChanged"/>
+                            <TextBox Name="txtSearch" Classes="formInput" Width="350" Watermark="Search by ID or Phone..." HorizontalAlignment="Left" TextChanged="txtSearch_TextChanged"/>
+                            
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
-                                <Button Name="btnEdit" IsEnabled="False" Click="btnEdit_Click" Content="✏️ Edit" Background="#eef2ff" Foreground="#4338ca" CornerRadius="12" Padding="16,8"/>
-                                <Button Name="btnDelete" IsEnabled="False" Click="btnDelete_Click" Content="🗑️ Remove" Background="#fef2f2" Foreground="#dc2626" CornerRadius="12" Padding="16,8"/>
+                                <Button Name="btnViewPets" IsEnabled="False" Click="btnViewPets_Click" Content="🐾 View Pets" Background="#f0fdf4" Foreground="#047857" CornerRadius="12" Padding="16,8" FontWeight="Bold"/>
+                                <Button Name="btnEdit" IsEnabled="False" Click="btnEdit_Click" Content="✏️ Edit" Background="#eef2ff" Foreground="#4338ca" CornerRadius="12" Padding="16,8" FontWeight="Bold"/>
+                                <Button Name="btnDelete" IsEnabled="False" Click="btnDelete_Click" Content="🗑️ Remove" Background="#fef2f2" Foreground="#dc2626" CornerRadius="12" Padding="16,8" FontWeight="Bold"/>
                             </StackPanel>
                         </Grid>
 
@@ -107,7 +109,8 @@
                         <Button Grid.Column="1" Name="btnSaveDialog" Click="btnSaveDialog_Click" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Classes="primaryAction" Height="48">
                             <Button.Background>
                                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
-                                    <GradientStop Offset="0" Color="#006c49"/><GradientStop Offset="1" Color="#10b981"/>
+                                    <GradientStop Offset="0" Color="#006c49"/>
+                                    <GradientStop Offset="1" Color="#10b981"/>
                                 </LinearGradientBrush>
                             </Button.Background>
                             <TextBlock Text="Save Client"/>

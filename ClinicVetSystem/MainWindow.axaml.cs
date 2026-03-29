@@ -7,6 +7,7 @@ using ClinicVetsSystem.Models;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace ClinicVetsSystem;
 
@@ -31,33 +32,23 @@ public partial class MainWindow : Window
     private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
-    // בלחיצה על כפתור ההחלפה - מריצים את הסלייד אפקט!
     private void ToggleSlide_Click(object sender, RoutedEventArgs e)
     {
         _isLoginView = !_isLoginView;
         UpdateSlidePosition();
     }
 
-    // אם המסך משנה גודל (Resize), אנחנו מתקנים את המיקום כדי שהאנימציה תישאר חלקה
-    private void ContainerGrid_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        UpdateSlidePosition();
-    }
+    private void ContainerGrid_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateSlidePosition();
 
     private void UpdateSlidePosition()
     {
-        // הפאנל הירוק מחליק את הרוחב של העמודה השמאלית כשהוא עובר ימינה
         double targetX = _isLoginView ? 0 : LeftPanel.Bounds.Width;
-        
-        // ביצוע האנימציה (Web3 Style TranslateX)
         OverlayPanel.RenderTransform = TransformOperations.Parse($"translateX({targetX}px)");
 
-        // הפעלת מעברי שקיפות לטקסטים
         if (_isLoginView)
         {
             OverlayLeftContent.Opacity = 1;
             OverlayLeftContent.IsHitTestVisible = true;
-            
             OverlayRightContent.Opacity = 0;
             OverlayRightContent.IsHitTestVisible = false;
         }
@@ -65,23 +56,22 @@ public partial class MainWindow : Window
         {
             OverlayLeftContent.Opacity = 0;
             OverlayLeftContent.IsHitTestVisible = false;
-            
             OverlayRightContent.Opacity = 1;
             OverlayRightContent.IsHitTestVisible = true;
         }
     }
 
 
-    // ─── Login Logic ─────────────────────────────────────────────────────────
+    // ─── Login Logic (Fix Bug 7 & 8) ─────────────────────────────────────────
 
     private async void btnLoginSubmit_Click(object sender, RoutedEventArgs e)
     {
-        string email = txtLoginEmail.Text?.Trim() ?? "";
+        string loginIdentifier = txtLoginEmail.Text?.Trim() ?? ""; // יכול להיות אימייל או שם משתמש
         string password = txtLoginPassword.Text ?? "";
 
-        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        if (string.IsNullOrEmpty(loginIdentifier) || string.IsNullOrEmpty(password))
         {
-            ShowLoginError("נא למלא אימייל וסיסמה.");
+            ShowLoginError("נא למלא שם משתמש/אימייל וסיסמה.");
             return;
         }
 
@@ -93,31 +83,34 @@ public partial class MainWindow : Window
             var client = SupabaseService.Client;
             if (client == null)
             {
-                ShowLoginError("שגיאה: אין חיבור לשרת.");
+                ShowLoginError("שגיאה: אין חיבור לשרת נתונים.");
                 return;
             }
 
+            // משיכת כל מי שהסיסמה שלו תואמת (כדי לאמת צד לקוח על שם משתמש/אימייל במקביל)
             var result = await client
                 .From<Staff>()
-                .Where(s => s.Username == email && s.Password == password) // בהנחה שהלוגין הוא לפי אימייל (לפי העיצוב)
+                .Where(s => s.Password == password)
                 .Get();
 
-            var staffMember = result.Models.FirstOrDefault();
+            // תיקון באג 7: בודק האם מה שהוקלד תואם לשם המשתמש או לאימייל במערכת
+            var staffMember = result.Models.FirstOrDefault(s => s.Username == loginIdentifier || s.Email == loginIdentifier);
 
             if (staffMember != null)
             {
-                var mainMenu = new ClinicVetSystem.MainMenuWindow(staffMember);
+                var mainMenu = new ClinicVetsSystem.MainMenuWindow(staffMember);
                 mainMenu.Show();
                 this.Close();
             }
             else
             {
-                ShowLoginError("אימייל או סיסמה שגויים.");
+                ShowLoginError("שם משתמש, אימייל או סיסמה שגויים.");
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            ShowLoginError($"שגיאת חיבור: {ex.Message}");
+            // תיקון באג 8: טיפול שגיאות ידידותי למשתמש
+            ShowLoginError("שגיאת התחברות: אנא בדוק את החיבור לרשת ונסה שוב.");
         }
         finally
         {
@@ -127,12 +120,14 @@ public partial class MainWindow : Window
 
     private void ShowLoginError(string msg)
     {
+        lblLoginMessage.Foreground = SolidColorBrush.Parse("#ba1a1a");
+        lblLoginMessage.Background = SolidColorBrush.Parse("#1Affdad6");
         lblLoginMessage.Text = msg;
         lblLoginMessage.IsVisible = true;
     }
 
 
-    // ─── Registration Logic ──────────────────────────────────────────────────
+    // ─── Registration Logic (Fix Bug 5, 6 & 8) ───────────────────────────────
 
     private async void btnSubmitRegister_Click(object sender, RoutedEventArgs e)
     {
@@ -149,9 +144,10 @@ public partial class MainWindow : Window
         { ShowRegError(lblUsernameError, "שם משתמש: 6-8 תווים, מקס' 2 ספרות."); isValid = false; }
         else HideRegError(lblUsernameError);
 
-        bool passOk = password.Length >= 8 && password.Length <= 10 && password.Any(char.IsLetter) && password.Count(char.IsDigit) == 1 && password.Count(c => "$#!.".Contains(c)) == 1;
+        // תיקון באג 5: הסרת הנקודה מתוך התווים המיוחדים
+        bool passOk = password.Length >= 8 && password.Length <= 10 && password.Any(char.IsLetter) && password.Count(char.IsDigit) == 1 && password.Count(c => "$#!".Contains(c)) == 1;
         if (!passOk)
-        { ShowRegError(lblPasswordError, "סיסמה: 8-10 תווים, אות, ספרה אחת, תו מיוחד ($#!.)."); isValid = false; }
+        { ShowRegError(lblPasswordError, "סיסמה: 8-10 תווים, אות, ספרה אחת, ותו מיוחד ($#!)."); isValid = false; }
         else HideRegError(lblPasswordError);
 
         if (!ValidateRegex(employeeNum, @"^\d{4}$"))
@@ -179,6 +175,7 @@ public partial class MainWindow : Window
         {
             var newStaff = new Staff
             {
+                Id = id, // חשוב להכניס את הת"ז ל-DB
                 Username = username,
                 Password = password,
                 EmployeeNumber = int.Parse(employeeNum),
@@ -188,21 +185,33 @@ public partial class MainWindow : Window
 
             await SupabaseService.Client!.From<Staff>().Insert(newStaff);
 
-            // Success Message
+            // הצלחה
             lblRegMessage.Foreground = SolidColorBrush.Parse("#006c49");
             lblRegMessage.Background = SolidColorBrush.Parse("#d1fae5");
-            lblRegMessage.Text = "✓ Registration Successful! Please switch to Login.";
+            lblRegMessage.Text = "✓ נרשמת בהצלחה! מעביר למסך התחברות...";
             lblRegMessage.IsVisible = true;
 
-            // Optional: Auto switch to login after 2 seconds
-            // await System.Threading.Tasks.Task.Delay(2000);
-            // ToggleSlide_Click(null, null);
+            // תיקון באג 6: מעבר אוטומטי למסך הלוגין לאחר 2 שניות
+            await Task.Delay(2000);
+            
+            // ניקוי השדות כדי למנוע שמירת נתונים באוויר
+            txtRegUsername.Text = txtRegPassword.Text = txtRegEmpNum.Text = txtRegId.Text = txtRegEmail.Text = "";
+            cmbRegRole.SelectedIndex = -1;
+            lblRegMessage.IsVisible = false;
+
+            ToggleSlide_Click(null!, null!);
         }
         catch (Exception ex)
         {
+            // תיקון באג 8: הודעות שגיאה בעברית ולא SQL
             lblRegMessage.Foreground = SolidColorBrush.Parse("#ba1a1a");
             lblRegMessage.Background = SolidColorBrush.Parse("#1Affdad6");
-            lblRegMessage.Text = ex.Message.Contains("duplicate") ? "Error: Data already exists." : $"Server error: {ex.Message}";
+            
+            if (ex.Message.Contains("duplicate") || ex.Message.Contains("23505"))
+                lblRegMessage.Text = "שגיאה: שם המשתמש, תעודת הזהות או האימייל כבר רשומים במערכת.";
+            else
+                lblRegMessage.Text = "שגיאת מערכת: לא ניתן להשלים את ההרשמה כעת.";
+                
             lblRegMessage.IsVisible = true;
         }
         finally

@@ -97,7 +97,6 @@
     </Window.Styles>
 
     <Grid RowDefinitions="Auto, *">
-        
         <Grid Grid.Row="0" Height="40" Background="Transparent" PointerPressed="TitleBar_PointerPressed" ZIndex="20">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,8,0" Spacing="4">
                 <Button Classes="chromeBtn" Click="Minimize_Click"><PathIcon Data="M20,14H4V10H20" Width="12" Height="12"/></Button>
@@ -107,7 +106,6 @@
         </Grid>
 
         <Grid Grid.Row="1" Margin="20" HorizontalAlignment="Center" VerticalAlignment="Center">
-            
             <Border MaxWidth="1000" Width="1000" MinHeight="680" Height="680" 
                     CornerRadius="32" Background="#ffffff" ClipToBounds="True" BoxShadow="0 24 48 0 #0F005236">
                 
@@ -116,7 +114,6 @@
                     <Panel x:Name="LeftPanel" Grid.Column="0" Background="#ffffff">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <StackPanel Margin="48,32" MaxWidth="380" HorizontalAlignment="Center">
-                                
                                 <TextBlock Text="Register Staff" FontSize="32" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
                                 <TextBlock Text="Create a new clinician or administrative profile." FontSize="14" Foreground="#3c4a42" Margin="0,0,0,24"/>
 
@@ -189,10 +186,10 @@
                                 <TextBlock Name="lblLoginMessage" Foreground="#ba1a1a" Padding="12" FontSize="13" FontWeight="Medium" IsVisible="False" TextWrapping="Wrap"/>
                             </Border>
 
-                            <TextBlock Text="User Name" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,8"/>
+                            <TextBlock Text="USERNAME OR EMAIL" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,8"/>
                             <Panel Margin="0,0,0,24">
                                 <PathIcon Data="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
-                                <TextBox Name="txtLoginEmail" Watermark="Yochayab"/>
+                                <TextBox Name="txtLoginEmail" Watermark="e.g. jsmith12 or mail@clinic.com"/>
                             </Panel>
 
                             <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">

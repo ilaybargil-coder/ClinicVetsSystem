@@ -1,10 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using ClinicVetsSystem;
 using ClinicVetsSystem.Models;
 
-namespace ClinicVetSystem;
+namespace ClinicVetsSystem; // שים לב! הוספתי כאן את ה-S הקריטית
 
 public partial class MainMenuWindow : Window
 {
@@ -40,7 +39,7 @@ public partial class MainMenuWindow : Window
         lblTopName.Text = _loggedInStaff.Username;
         lblTopRole.Text = _loggedInStaff.Role.ToUpper();
 
-        // הסתרת הכפתורים הנכונים לפי תפקיד (השמות עודכנו ל-btnNav...)
+        // הסתרת הכפתורים הנכונים לפי תפקיד
         if (_loggedInStaff.Role == "מזכיר/ה")
         {
             btnNavCustomers.IsVisible = true;
@@ -60,7 +59,7 @@ public partial class MainMenuWindow : Window
         btnNavCustomers.Classes.Remove("active");
         btnNavPets.Classes.Remove("active");
 
-        // 2. הסתרת כל הפאנלים (לוודא שכלום לא מוצג בטעות)
+        // 2. הסתרת כל הפאנלים
         DashboardPanel.IsVisible = false;
         CustomersPanel.IsVisible = false;
         PetsPanel.IsVisible = false;
@@ -85,21 +84,25 @@ public partial class MainMenuWindow : Window
         }
     }
 
-    // אירועי לחיצה בסרגל הצד (שולחים לשם הטאב)
+    // ─── Events ──────────────────────────────────────────────────────────────
+
     private void btnNavDashboard_Click(object sender, RoutedEventArgs e) => SetActiveTab("Dashboard");
     private void btnNavCustomers_Click(object sender, RoutedEventArgs e) => SetActiveTab("Customers");
-    
-    // אלה יפותחו בהמשך כשניצור להם UserControls
     private void btnPets_Click(object sender, RoutedEventArgs e) => SetActiveTab("Pets");
-    private void btnVisits_Click(object sender, RoutedEventArgs e) { /* SetActiveTab("Visits"); */ }
+    private void btnVisits_Click(object sender, RoutedEventArgs e) { /* יפותח בהמשך */ }
+    private void BtnCalender_OnClick_Click(object? sender, RoutedEventArgs e) { /* יפותח בהמשך */ }
 
-    private void BtnCalender_OnClick_Click(object? sender, RoutedEventArgs e) { /* SetActiveTab("Visits"); */ }
-    // התנתקות
+    // הפונקציה שהייתה חסרה וגרמה לשגיאה שצילמת!
+    public void GoToPetsForCustomer(string customerId)
+    {
+        SetActiveTab("Pets");
+        // בעתיד נוסיף כאן פקודה שתסנן את חיות המחמד לפי customerId
+    }
+
     private void btnLogout_Click(object sender, RoutedEventArgs e)
     {
         var loginWindow = new MainWindow();
         loginWindow.Show();
         this.Close();
     }
-    
 }
