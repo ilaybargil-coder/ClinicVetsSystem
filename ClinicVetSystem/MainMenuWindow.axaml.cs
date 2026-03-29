@@ -1,10 +1,10 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using ClinicVetsSystem;
 using ClinicVetsSystem.Models;
+using System;
 
-namespace ClinicVetSystem;
+namespace ClinicVetsSystem;
 
 public partial class MainMenuWindow : Window
 {
@@ -16,11 +16,9 @@ public partial class MainMenuWindow : Window
         _loggedInStaff = staff;
         
         SetupMenuForRole();
-        SetActiveTab("Dashboard"); // קביעת הטאב ההתחלתי שיוצג
     }
 
-    // ─── Custom Window Chrome Logic ──────────────────────────────────────────
-
+    // --- כפתורי כותרת ---
     private void TitleBar_PointerPressed(object sender, PointerPressedEventArgs e)
     {
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -31,69 +29,45 @@ public partial class MainMenuWindow : Window
     private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
-
-    // ─── Role Authorization & SPA Routing ────────────────────────────────────
-
+    // --- הגדרת תפריט לפי תפקיד ---
     private void SetupMenuForRole()
     {
-        lblGreeting.Text = $"Morning, {_loggedInStaff.Username}";
-        lblTopName.Text = _loggedInStaff.Username;
-        lblTopRole.Text = _loggedInStaff.Role.ToUpper();
+        // וודאי שהשמות האלו קיימים ב-XAML שלך (למשל x:Name="lblGreeting")
+        if (this.FindControl<TextBlock>("lblGreeting") != null)
+            this.FindControl<TextBlock>("lblGreeting").Text = $"שלום, {_loggedInStaff.Username}";
 
-        // הסתרת הכפתורים הנכונים לפי תפקיד (השמות עודכנו ל-btnNav...)
-        if (_loggedInStaff.Role == "מזכיר/ה")
-        {
-            btnNavCustomers.IsVisible = true;
-            btnNavVisits.IsVisible = false;
-        }
-        else if (_loggedInStaff.Role == "וטרינר/ית")
-        {
-            btnNavCustomers.IsVisible = false;
-            btnNavVisits.IsVisible = true;
-        }
+        // בדיקה אילו כפתורים להציג
+        var btnVisits = this.FindControl<Button>("btnNavVisits");
+        if (btnVisits != null)
+            btnVisits.IsVisible = (_loggedInStaff.Role == "וטרינר/ית");
     }
 
-    private void SetActiveTab(string tabName)
+    // --- ניווט ---
+    private void btnNavDashboard_Click(object sender, RoutedEventArgs e) 
     {
-        // 1. איפוס הסגנון של כל כפתורי הניווט (מסיר את המחלקה active)
-        btnNavDashboard.Classes.Remove("active");
-        btnNavCustomers.Classes.Remove("active");
-        
-        // 2. הסתרת כל הפאנלים (לוודא שכלום לא מוצג בטעות)
-        DashboardPanel.IsVisible = false;
-        CustomersPanel.IsVisible = false;
+        // כאן את יכולה להחזיר את התוכן של ה-Dashboard
+    }
 
-        // 3. הפעלת הפאנל והכפתור הרלוונטי בלבד
-        switch (tabName)
+    private void btnInventory_Click(object? sender, RoutedEventArgs e)
+    {
+        var mainContent = this.FindControl<ContentControl>("MainContentRegion") ?? this.FindControl<ContentControl>("DashboardPanel");
+        if (mainContent != null)
+            mainContent.Content = new InventoryView();
+    }
+
+    private void btnVisits_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_loggedInStaff.Role == "וטרינר/ית")
         {
-            case "Dashboard":
-                btnNavDashboard.Classes.Add("active");
-                DashboardPanel.IsVisible = true;
-                break;
-            case "Customers":
-                btnNavCustomers.Classes.Add("active");
-                CustomersPanel.IsVisible = true;
-                // קריאה לרכיב הלקוחות שימשוך נתונים טריים מ-Supabase
-                _ = CustomersPanel.LoadDataAsync(); 
-                break;
+            var mainContent = this.FindControl<ContentControl>("MainContentRegion") ?? this.FindControl<ContentControl>("DashboardPanel");
+            if (mainContent != null)
+                mainContent.Content = new VisitsView(_loggedInStaff);
         }
     }
 
-    // אירועי לחיצה בסרגל הצד (שולחים לשם הטאב)
-    private void btnNavDashboard_Click(object sender, RoutedEventArgs e) => SetActiveTab("Dashboard");
-    private void btnNavCustomers_Click(object sender, RoutedEventArgs e) => SetActiveTab("Customers");
-    
-    // אלה יפותחו בהמשך כשניצור להם UserControls
-    private void btnPets_Click(object sender, RoutedEventArgs e) { /* SetActiveTab("Pets"); */ }
-    private void btnVisits_Click(object sender, RoutedEventArgs e) { /* SetActiveTab("Visits"); */ }
-
-    private void BtnCalender_OnClick_Click(object? sender, RoutedEventArgs e) { /* SetActiveTab("Visits"); */ }
-    // התנתקות
     private void btnLogout_Click(object sender, RoutedEventArgs e)
     {
-        var loginWindow = new MainWindow();
-        loginWindow.Show();
+        new MainWindow().Show();
         this.Close();
     }
-    
 }
