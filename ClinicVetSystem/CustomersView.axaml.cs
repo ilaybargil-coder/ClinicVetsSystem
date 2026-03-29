@@ -41,8 +41,6 @@ public partial class CustomersView : UserControl
     private void RefreshDisplay()
     {
         var query = txtSearch.Text?.Trim().ToLower() ?? "";
-        
-        // תיקון חיפוש: עובד לפי ת"ז או טלפון בלבד!
         var filtered = string.IsNullOrEmpty(query) 
             ? _allCustomers 
             : _allCustomers.Where(c => c.Id.Contains(query) || c.Phone.Contains(query)).ToList();
@@ -52,23 +50,18 @@ public partial class CustomersView : UserControl
         lblCustomerCount.Text = $"Showing {filtered.Count} clients";
     }
 
-    private void txtSearch_TextChanged(object? sender, TextChangedEventArgs e)
-    {
-        RefreshDisplay();
-    }
-    // פשוט מחק לגמרי את הפונקציה btnClearSearch_Click !
-    
-    private void btnClearSearch_Click(object? sender, RoutedEventArgs e) => txtSearch.Text = "";
+    private void txtSearch_TextChanged(object? sender, TextChangedEventArgs e) => RefreshDisplay();
     
     private void lstCustomers_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         bool hasSelection = lstCustomers.SelectedItem != null;
         btnEdit.IsEnabled = hasSelection;
         btnDelete.IsEnabled = hasSelection;
-        btnViewPets.IsEnabled = hasSelection; // הפעלת הכפתור החדש
+        btnViewPets.IsEnabled = hasSelection;
     }
 
-    // --- Modal Logic ---
+    // ─── Dialog Logic ──────────────────────────────────────────────────
+
     private void OpenDialog(Customer? c = null)
     {
         _isEditMode = c != null;
@@ -90,26 +83,46 @@ public partial class CustomersView : UserControl
         try {
             var name = txtDialogName.Text?.Trim() ?? "";
             var id = txtDialogId.Text?.Trim() ?? "";
+            var phone = txtDialogPhone.Text?.Trim() ?? "";
+            var email = txtDialogEmail.Text?.Trim() ?? "";
             
-            // ולידציה לשם הלקוח (אותיות ורווחים בלבד, עברית או אנגלית)
+            // ולידציה שם (אותיות ורווחים)
             if (string.IsNullOrEmpty(name) || !Regex.IsMatch(name, @"^[\u0590-\u05FFa-zA-Z\s]+$"))
             {
                 ShowDialogError("שם הלקוח חייב להכיל אותיות בלבד.");
                 return;
             }
             
-            // ולידציה קלה למזהה ולטלפון (כדי למנוע שגיאות SQL פשוטות)
+            // ולידציה ת"ז (9 ספרות)
             if (string.IsNullOrEmpty(id) || !Regex.IsMatch(id, @"^\d{9}$"))
             {
                 ShowDialogError("תעודת הזהות חייבת להכיל בדיוק 9 ספרות.");
                 return;
             }
 
+            // תיקון באג 3: ולידציית טלפון (מתחיל ב-0, ויש בו 9 או 10 ספרות)
+            if (string.IsNullOrEmpty(phone) || !Regex.IsMatch(phone, @"^0\d{8,9}$"))
+            {
+                ShowDialogError("מספר הטלפון לא חוקי (חייב להתחיל ב-0 ולהכיל 9-10 ספרות).");
+                return;
+            }
+
+            // תיקון באג 4 + הכנה ל-9: ולידציית אימייל מחמירה אם הוקלד משהו
+            if (!string.IsNullOrEmpty(email))
+            {
+                // מאשר רק סיומות ידועות וחוסם דברים כמו .fucku
+                if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.(com|co\.il|org|net|ac\.il|gov\.il|edu)$", RegexOptions.IgnoreCase))
+                {
+                    ShowDialogError("כתובת האימייל אינה תקינה או בעלת סיומת לא חוקית.");
+                    return;
+                }
+            }
+
             var customer = new Customer { 
                 Id = id, 
                 FullName = name, 
-                Phone = txtDialogPhone.Text?.Trim() ?? "", 
-                Email = string.IsNullOrWhiteSpace(txtDialogEmail.Text) ? null : txtDialogEmail.Text.Trim() 
+                Phone = phone, 
+                Email = string.IsNullOrEmpty(email) ? null : email 
             };
 
             var client = SupabaseService.Client;
@@ -129,7 +142,6 @@ public partial class CustomersView : UserControl
             await LoadDataAsync();
             
         } catch (Exception ex) { 
-            // טיפול בשגיאות כפילות (כדי שלא יקרוס עם שגיאת SQL באנגלית)
             if (ex.Message.Contains("duplicate") || ex.Message.Contains("23505"))
                 ShowDialogError("שגיאה: תעודת הזהות או האימייל כבר קיימים במערכת.");
             else
@@ -157,18 +169,14 @@ public partial class CustomersView : UserControl
             await SupabaseService.Client!.From<Customer>().Where(c => c.Id == r.Id).Delete();
             await LoadDataAsync();
         } catch (Exception) { 
-            // טיפול בשגיאת SQL של מחיקה (למשל, יש לו חיות במערכת)
             lblStatus.Text = "⚠ שגיאה: לא ניתן למחוק לקוח שיש לו חיות מחמד במערכת."; 
             lblStatus.Foreground = Avalonia.Media.SolidColorBrush.Parse("#dc2626");
         }
     }
 
-    // הפעלת ראוטינג לחיות המחמד
     private void btnViewPets_Click(object? sender, RoutedEventArgs e)
     {
         if (lstCustomers.SelectedItem is not CustomerRow r) return;
-        
-        // קריאה לחלון האב כדי להעביר אותנו לטאב ה-Pets יחד עם ת"ז הלקוח
         if (this.VisualRoot is MainMenuWindow mainWindow)
         {
             mainWindow.GoToPetsForCustomer(r.Id);
@@ -176,7 +184,6 @@ public partial class CustomersView : UserControl
     }
 }
 
-// המחלקה שחסרה לך - חייבת להיות בתוך הקובץ או ב-Namespace זמין
 public class CustomerRow
 {
     public string Id { get; set; }

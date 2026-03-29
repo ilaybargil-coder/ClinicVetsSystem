@@ -16,9 +16,9 @@ public partial class MainMenuWindow : Window
         _loggedInStaff = staff;
 
         SetupMenuForRole();
+        SetActiveTab("Dashboard");
     }
 
-    // --- כפתורי כותרת ---
     private void TitleBar_PointerPressed(object sender, PointerPressedEventArgs e)
     {
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -29,16 +29,12 @@ public partial class MainMenuWindow : Window
     private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
-    // --- הגדרת תפריט לפי תפקיד ---
     private void SetupMenuForRole()
     {
-        if (this.FindControl<TextBlock>("lblGreeting") != null)
-            this.FindControl<TextBlock>("lblGreeting")!.Text = $"שלום, {_loggedInStaff.Username}";
+        lblGreeting.Text = $"Morning, {_loggedInStaff.Username}";
+        lblTopName.Text = _loggedInStaff.Username;
+        lblTopRole.Text = _loggedInStaff.Role.ToUpper();
 
-        // אתחול כפתור פעיל
-        _activeNavBtn = this.FindControl<Button>("btnNavDashboard");
-
-        // הסתרת הכפתורים הנכונים לפי תפקיד
         if (_loggedInStaff.Role == "מזכיר/ה")
         {
             btnNavCustomers.IsVisible = true;
@@ -51,29 +47,52 @@ public partial class MainMenuWindow : Window
         }
     }
 
-    // --- ניווט ---
-    private void SetActiveNav(object sender)
+    private void SetActiveTab(string tabName, bool clearFilters = true)
     {
-        if (_activeNavBtn != null)
-            _activeNavBtn.Classes.Set("active", false);
-        _activeNavBtn = sender as Button;
-        _activeNavBtn?.Classes.Set("active", true);
-    }
+        btnNavDashboard.Classes.Remove("active");
+        btnNavCustomers.Classes.Remove("active");
+        btnNavPets.Classes.Remove("active");
 
-    private void HideAllPanels()
-    {
-        var mainContent = this.FindControl<ContentControl>("MainContentRegion");
-        var dashboard = this.FindControl<ScrollViewer>("DashboardPanel");
-        if (mainContent != null) mainContent.IsVisible = false;
-        if (dashboard != null) dashboard.IsVisible = false;
+        DashboardPanel.IsVisible = false;
         CustomersPanel.IsVisible = false;
         PetsPanel.IsVisible = false;
+
+        var mainContent = this.FindControl<ContentControl>("MainContentRegion");
+        if (mainContent != null) mainContent.IsVisible = false;
+
+        switch (tabName)
+        {
+            case "Dashboard":
+                btnNavDashboard.Classes.Add("active");
+                DashboardPanel.IsVisible = true;
+                break;
+            case "Customers":
+                btnNavCustomers.Classes.Add("active");
+                CustomersPanel.IsVisible = true;
+                _ = CustomersPanel.LoadDataAsync();
+                break;
+            case "Pets":
+                btnNavPets.Classes.Add("active");
+                PetsPanel.IsVisible = true;
+                if (clearFilters) PetsPanel.ClearFilter();
+                _ = PetsPanel.LoadDataAsync();
+                break;
+        }
     }
 
     private void NavigateTo(UserControl view, object sender)
     {
-        HideAllPanels();
-        SetActiveNav(sender);
+        btnNavDashboard.Classes.Remove("active");
+        btnNavCustomers.Classes.Remove("active");
+        btnNavPets.Classes.Remove("active");
+        DashboardPanel.IsVisible = false;
+        CustomersPanel.IsVisible = false;
+        PetsPanel.IsVisible = false;
+
+        if (_activeNavBtn != null) _activeNavBtn.Classes.Set("active", false);
+        _activeNavBtn = sender as Button;
+        _activeNavBtn?.Classes.Set("active", true);
+
         var mainContent = this.FindControl<ContentControl>("MainContentRegion");
         if (mainContent != null)
         {
@@ -82,32 +101,10 @@ public partial class MainMenuWindow : Window
         }
     }
 
-    private void btnNavDashboard_Click(object sender, RoutedEventArgs e)
-    {
-        HideAllPanels();
-        SetActiveNav(sender);
-        var dashboard = this.FindControl<ScrollViewer>("DashboardPanel");
-        if (dashboard != null) dashboard.IsVisible = true;
-    }
-
-    private void btnNavCustomers_Click(object sender, RoutedEventArgs e)
-    {
-        HideAllPanels();
-        SetActiveNav(sender);
-        CustomersPanel.IsVisible = true;
-        _ = CustomersPanel.LoadDataAsync();
-    }
-
-    private void btnPets_Click(object sender, RoutedEventArgs e)
-    {
-        HideAllPanels();
-        SetActiveNav(sender);
-        PetsPanel.IsVisible = true;
-        _ = PetsPanel.LoadDataAsync();
-    }
-
+    private void btnNavDashboard_Click(object sender, RoutedEventArgs e) => SetActiveTab("Dashboard");
+    private void btnNavCustomers_Click(object sender, RoutedEventArgs e) => SetActiveTab("Customers");
+    private void btnPets_Click(object sender, RoutedEventArgs e) => SetActiveTab("Pets");
     private void BtnCalender_OnClick_Click(object? sender, RoutedEventArgs e) { }
-
     private void btnInventory_Click(object? sender, RoutedEventArgs e) => NavigateTo(new InventoryView(), sender!);
 
     private void btnVisits_Click(object? sender, RoutedEventArgs e)
@@ -116,16 +113,15 @@ public partial class MainMenuWindow : Window
             NavigateTo(new VisitsView(_loggedInStaff), sender!);
     }
 
+    public void GoToPetsForCustomer(string customerId)
+    {
+        SetActiveTab("Pets", clearFilters: false);
+        PetsPanel.FilterByCustomer(customerId);
+    }
+
     private void btnLogout_Click(object sender, RoutedEventArgs e)
     {
         new MainWindow().Show();
         this.Close();
-    }
-
-    // מעבר לחיות המחמד עם פילטר לקוח ספציפי
-    public void GoToPetsForCustomer(string customerId)
-    {
-        btnPets_Click(btnNavPets, null!);
-        // בעתיד נוסיף כאן פקודה שתסנן את חיות המחמד לפי customerId
     }
 }
