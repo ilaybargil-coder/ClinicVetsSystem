@@ -18,5 +18,6 @@
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
         <PackageReference Include="supabase-csharp" Version="0.16.2" />
+        <PackageReference Include="MailKit" Version="4.8.0" />
     </ItemGroup>
 </Project>

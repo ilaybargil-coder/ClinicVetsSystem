@@ -32,7 +32,7 @@
         <Style Selector="TextBox:focus /template/ Border#PART_BorderElement, ComboBox:focus /template/ Border#PART_BorderElement">
             <Setter Property="BorderBrush" Value="#006c49"/>
         </Style>
-        
+
         <Style Selector="Button.primary">
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Foreground" Value="White"/>
@@ -94,10 +94,23 @@
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Margin" Value="4,4,0,8"/>
         </Style>
+
+        <!-- Link-style button (for Forgot password, Resend, Back) -->
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter">
+            <Setter Property="Opacity" Value="0.7"/>
+        </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="Auto, *">
-        
+
         <Grid Grid.Row="0" Height="40" Background="Transparent" PointerPressed="TitleBar_PointerPressed" ZIndex="20">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,8,0" Spacing="4">
                 <Button Classes="chromeBtn" Click="Minimize_Click"><PathIcon Data="M20,14H4V10H20" Width="12" Height="12"/></Button>
@@ -107,16 +120,22 @@
         </Grid>
 
         <Grid Grid.Row="1" Margin="20" HorizontalAlignment="Center" VerticalAlignment="Center">
-            
-            <Border MaxWidth="1000" Width="1000" MinHeight="680" Height="680" 
+
+            <Border MaxWidth="1000" Width="1000" MinHeight="680" Height="680"
                     CornerRadius="32" Background="#ffffff" ClipToBounds="True" BoxShadow="0 24 48 0 #0F005236">
-                
+
                 <Grid x:Name="ContainerGrid" ColumnDefinitions="*,*" SizeChanged="ContainerGrid_SizeChanged">
-                    
+
+                    <!-- ═══════════════════════════════════════════════════════════
+                         LEFT PANEL – Register + Register OTP
+                    ════════════════════════════════════════════════════════════ -->
                     <Panel x:Name="LeftPanel" Grid.Column="0" Background="#ffffff">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+
+                        <!-- Registration Form -->
+                        <ScrollViewer x:Name="RegFormScroll"
+                                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <StackPanel Margin="48,32" MaxWidth="380" HorizontalAlignment="Center">
-                                
+
                                 <TextBlock Text="Register Staff" FontSize="32" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
                                 <TextBlock Text="Create a new clinician or administrative profile." FontSize="14" Foreground="#3c4a42" Margin="0,0,0,24"/>
 
@@ -166,7 +185,9 @@
                                 </ComboBox>
                                 <TextBlock Name="lblRoleError" Classes="errorLabel" IsVisible="False"/>
 
-                                <Button Name="btnSubmitRegister" Classes="primary" Margin="0,16,0,32" Height="52" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="btnSubmitRegister_Click">
+                                <Button Name="btnSubmitRegister" Classes="primary" Margin="0,16,0,32" Height="52"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                        VerticalContentAlignment="Center" Click="btnSubmitRegister_Click">
                                     <Button.Background>
                                         <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
                                             <GradientStop Offset="0" Color="#006c49"/>
@@ -177,11 +198,63 @@
                                 </Button>
                             </StackPanel>
                         </ScrollViewer>
+
+                        <!-- Registration OTP Panel -->
+                        <StackPanel x:Name="RegOtpPanel" IsVisible="False"
+                                    Margin="48,0" MaxWidth="380"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="0">
+                            <TextBlock Text="✉" FontSize="52" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                            <TextBlock Text="Verify Your Email" FontSize="30" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
+                            <TextBlock x:Name="lblRegOtpSentTo" FontSize="13" Foreground="#3c4a42"
+                                       Margin="0,0,0,28" TextWrapping="Wrap"/>
+
+                            <TextBlock Text="VERIFICATION CODE" FontSize="10" FontWeight="Bold"
+                                       Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
+                            <TextBox x:Name="txtRegOtp"
+                                     Watermark="0  0  0  0  0  0"
+                                     MaxLength="6"
+                                     HorizontalContentAlignment="Center"
+                                     FontSize="28" FontWeight="Bold"
+                                     Padding="16,14" LetterSpacing="6"/>
+                            <TextBlock x:Name="lblRegOtpError" Classes="errorLabel" IsVisible="False"/>
+
+                            <Button x:Name="btnVerifyRegOtp" Classes="primary"
+                                    Margin="0,16,0,0" Height="52"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center" Click="btnVerifyRegOtp_Click">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                        <GradientStop Offset="0" Color="#006c49"/>
+                                        <GradientStop Offset="1" Color="#10b981"/>
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                                <TextBlock Text="Verify &amp; Complete Registration" VerticalAlignment="Center"/>
+                            </Button>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                        Margin="0,16,0,0" Spacing="8">
+                                <Button Classes="link" Foreground="#006c49" Click="btnResendRegOtp_Click">
+                                    Resend Code
+                                </Button>
+                                <TextBlock Text="·" Foreground="#bbcabf" VerticalAlignment="Center" FontSize="16"/>
+                                <Button Classes="link" Foreground="#6c7a71" Click="btnBackToRegForm_Click">
+                                    ← Back
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+
                     </Panel>
 
+                    <!-- ═══════════════════════════════════════════════════════════
+                         RIGHT PANEL – Login + Forgot Password flow
+                    ════════════════════════════════════════════════════════════ -->
                     <Panel x:Name="RightPanel" Grid.Column="1" Background="#ffffff">
-                        <StackPanel Margin="48,80" MaxWidth="380" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            
+
+                        <!-- Login Form -->
+                        <StackPanel x:Name="LoginFormPanel"
+                                    Margin="48,80" MaxWidth="380"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center">
+
                             <TextBlock Text="Welcome Back" FontSize="36" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
                             <TextBlock Text="Please enter your clinician credentials to access the system." FontSize="15" Foreground="#3c4a42" Margin="0,0,0,40"/>
 
@@ -197,14 +270,19 @@
 
                             <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
                                 <TextBlock Grid.Column="0" Text="PASSWORD" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1"/>
-                                <TextBlock Grid.Column="1" Text="Forgot password?" FontSize="11" FontWeight="Bold" Foreground="#006c49" Cursor="Hand"/>
+                                <Button Grid.Column="1" Classes="link" Foreground="#006c49" FontSize="11"
+                                        Click="ForgotPassword_Click">
+                                    Forgot password?
+                                </Button>
                             </Grid>
                             <Panel Margin="0,0,0,40">
                                 <PathIcon Data="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.89,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
                                 <TextBox Name="txtLoginPassword" PasswordChar="•" Watermark="••••••••••••"/>
                             </Panel>
 
-                            <Button Name="btnLoginSubmit" Classes="primary" Height="52" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Click="btnLoginSubmit_Click">
+                            <Button Name="btnLoginSubmit" Classes="primary" Height="52"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center" Click="btnLoginSubmit_Click">
                                 <Button.Background>
                                     <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
                                         <GradientStop Offset="0" Color="#006c49"/>
@@ -214,9 +292,120 @@
                                 <TextBlock Text="Enter Clinic Dashboard" VerticalAlignment="Center"/>
                             </Button>
                         </StackPanel>
+
+                        <!-- Forgot Password – Step 1: Enter Email -->
+                        <StackPanel x:Name="ForgotEmailPanel" IsVisible="False"
+                                    Margin="48,0" MaxWidth="380"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="0">
+                            <TextBlock Text="🔐" FontSize="52" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                            <TextBlock Text="Forgot Password?" FontSize="30" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
+                            <TextBlock Text="Enter the email address associated with your account and we'll send you a reset code." FontSize="14" Foreground="#3c4a42" Margin="0,0,0,28" TextWrapping="Wrap"/>
+
+                            <TextBlock Text="EMAIL ADDRESS" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
+                            <Panel>
+                                <PathIcon Data="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
+                                <TextBox x:Name="txtForgotEmail" Watermark="dr.green@clinic.com"/>
+                            </Panel>
+                            <TextBlock x:Name="lblForgotEmailError" Classes="errorLabel" IsVisible="False"/>
+
+                            <Button x:Name="btnSendForgotOtp" Classes="primary"
+                                    Margin="0,16,0,0" Height="52"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center" Click="btnSendForgotOtp_Click">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                        <GradientStop Offset="0" Color="#006c49"/>
+                                        <GradientStop Offset="1" Color="#10b981"/>
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                                <TextBlock Text="Send Reset Code" VerticalAlignment="Center"/>
+                            </Button>
+
+                            <Button Classes="link" Foreground="#6c7a71"
+                                    HorizontalAlignment="Center" Margin="0,16,0,0"
+                                    Click="btnBackToLogin_Click">
+                                ← Back to Login
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Forgot Password – Step 2: Enter OTP -->
+                        <StackPanel x:Name="ForgotOtpPanel" IsVisible="False"
+                                    Margin="48,0" MaxWidth="380"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="0">
+                            <TextBlock Text="✉" FontSize="52" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                            <TextBlock Text="Check Your Email" FontSize="30" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
+                            <TextBlock x:Name="lblForgotOtpSentTo" FontSize="13" Foreground="#3c4a42"
+                                       Margin="0,0,0,28" TextWrapping="Wrap"/>
+
+                            <TextBlock Text="RESET CODE" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
+                            <TextBox x:Name="txtForgotOtp"
+                                     Watermark="0  0  0  0  0  0"
+                                     MaxLength="6"
+                                     HorizontalContentAlignment="Center"
+                                     FontSize="28" FontWeight="Bold"
+                                     Padding="16,14" LetterSpacing="6"/>
+                            <TextBlock x:Name="lblForgotOtpError" Classes="errorLabel" IsVisible="False"/>
+
+                            <Button x:Name="btnVerifyForgotOtp" Classes="primary"
+                                    Margin="0,16,0,0" Height="52"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center" Click="btnVerifyForgotOtp_Click">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                        <GradientStop Offset="0" Color="#006c49"/>
+                                        <GradientStop Offset="1" Color="#10b981"/>
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                                <TextBlock Text="Verify Code" VerticalAlignment="Center"/>
+                            </Button>
+
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                        Margin="0,16,0,0" Spacing="8">
+                                <Button Classes="link" Foreground="#006c49" Click="btnResendForgotOtp_Click">
+                                    Resend Code
+                                </Button>
+                                <TextBlock Text="·" Foreground="#bbcabf" VerticalAlignment="Center" FontSize="16"/>
+                                <Button Classes="link" Foreground="#6c7a71" Click="btnBackToForgotEmail_Click">
+                                    ← Back
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Forgot Password – Step 3: New Password -->
+                        <StackPanel x:Name="ForgotNewPassPanel" IsVisible="False"
+                                    Margin="48,0" MaxWidth="380"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="0">
+                            <TextBlock Text="🔑" FontSize="52" HorizontalAlignment="Center" Margin="0,0,0,16"/>
+                            <TextBlock Text="New Password" FontSize="30" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
+                            <TextBlock Text="Choose a new password for your account." FontSize="14" Foreground="#3c4a42" Margin="0,0,0,28" TextWrapping="Wrap"/>
+
+                            <TextBlock Text="NEW PASSWORD" FontSize="10" FontWeight="Bold" Foreground="#3c4a42" LetterSpacing="1" Margin="0,0,0,6"/>
+                            <Panel>
+                                <PathIcon Data="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.89,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z" Width="18" Height="18" Foreground="#bbcabf" HorizontalAlignment="Left" Margin="14,0,0,0" ZIndex="1"/>
+                                <TextBox x:Name="txtForgotNewPass" PasswordChar="•" Watermark="••••••••••••"/>
+                            </Panel>
+                            <TextBlock x:Name="lblForgotNewPassError" Classes="errorLabel" IsVisible="False" TextWrapping="Wrap"/>
+
+                            <Button x:Name="btnUpdatePassword" Classes="primary"
+                                    Margin="0,16,0,0" Height="52"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center" Click="btnUpdatePassword_Click">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                        <GradientStop Offset="0" Color="#006c49"/>
+                                        <GradientStop Offset="1" Color="#10b981"/>
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                                <TextBlock Text="Update Password" VerticalAlignment="Center"/>
+                            </Button>
+                        </StackPanel>
+
                     </Panel>
 
-                    <Border x:Name="OverlayPanel" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left" ZIndex="10" 
+                    <!-- ═══════════════════════════════════════════════════════════
+                         OVERLAY PANEL (green sliding panel) – UNCHANGED
+                    ════════════════════════════════════════════════════════════ -->
+                    <Border x:Name="OverlayPanel" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left" ZIndex="10"
                             Width="{Binding #LeftPanel.Bounds.Width}" BoxShadow="0 0 32 0 #40005236" RenderTransform="translateX(0px)">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
@@ -224,7 +413,7 @@
                                 <GradientStop Offset="1" Color="#00422b"/>
                             </LinearGradientBrush>
                         </Border.Background>
-                        
+
                         <Border.Transitions>
                             <Transitions>
                                 <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.7" Easing="CubicEaseInOut"/>
@@ -238,7 +427,7 @@
                                 </StackPanel.Transitions>
                                 <TextBlock Text="🐾" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,24"/>
                                 <TextBlock Text="Restoring Vitality" FontSize="36" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                                <TextBlock Text="New to the greenhouse? Register your staff profile to start optimizing pet care." 
+                                <TextBlock Text="New to the greenhouse? Register your staff profile to start optimizing pet care."
                                            FontSize="16" Foreground="#CCFFFFFF" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="320" Margin="0,0,0,40" LineHeight="24"/>
                                 <Button Classes="outline" Content="CREATE ACCOUNT" HorizontalAlignment="Center" Click="ToggleSlide_Click"/>
                             </StackPanel>
@@ -249,13 +438,13 @@
                                 </StackPanel.Transitions>
                                 <TextBlock Text="🩺" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,24"/>
                                 <TextBlock Text="Already a Member?" FontSize="36" FontWeight="Black" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,16"/>
-                                <TextBlock Text="Welcome back! Please sign in to access your dashboard and daily schedule." 
+                                <TextBlock Text="Welcome back! Please sign in to access your dashboard and daily schedule."
                                            FontSize="16" Foreground="#CCFFFFFF" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="320" Margin="0,0,0,40" LineHeight="24"/>
                                 <Button Classes="outline" Content="SIGN IN" HorizontalAlignment="Center" Click="ToggleSlide_Click"/>
                             </StackPanel>
                         </Grid>
                     </Border>
-                    
+
                 </Grid>
             </Border>
         </Grid>
