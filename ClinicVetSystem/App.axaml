@@ -3,6 +3,6 @@
              x:Class="ClinicVetsSystem.App"
              xmlns:local="using:ClinicVetsSystem">
     <Application.Styles>
-        <FluentTheme />
+        <FluentTheme Mode="Light" />
     </Application.Styles>
 </Application>
