@@ -17,7 +17,8 @@ public partial class PetsView : UserControl
     private List<Customer> _allCustomers = new();
     private bool _isEditMode = false;
     private int _editingPetId = 0;
-
+    
+    private string _currentFilterCustomerId = "";
     private static readonly string[] PetTypes = { "כלב", "חתול", "זוחל", "ציפור" };
 
     public PetsView()
@@ -49,7 +50,7 @@ public partial class PetsView : UserControl
                 return new PetRow(p, owner?.FullName ?? p.OwnerId);
             }).ToList();
 
-            // Refresh owner dropdown in case dialog is open
+            // טוענים את שמות הלקוחות לקומבו בוקס מראש
             cbDialogOwner.ItemsSource = _allCustomers.Select(c => c.FullName).ToList();
 
             RefreshDisplay();
@@ -61,14 +62,46 @@ public partial class PetsView : UserControl
     private void RefreshDisplay()
     {
         var query = txtSearch.Text?.Trim().ToLower() ?? "";
-        var filtered = string.IsNullOrEmpty(query)
-            ? _allPets
-            : _allPets.Where(p =>
+        var filtered = _allPets.AsEnumerable();
+
+        if (!string.IsNullOrEmpty(_currentFilterCustomerId))
+        {
+            filtered = filtered.Where(p => p.OwnerId == _currentFilterCustomerId);
+        }
+
+        if (!string.IsNullOrEmpty(query))
+        {
+            filtered = filtered.Where(p =>
                 p.Name.ToLower().Contains(query) ||
-                (p.ChipNumber?.ToLower().Contains(query) ?? false)).ToList();
+                (p.ChipNumber?.ToLower().Contains(query) ?? false));
+        }
+
+        var filteredList = filtered.ToList();
         _displayedPets.Clear();
-        foreach (var row in filtered) _displayedPets.Add(row);
-        lblPetCount.Text = $"Showing {filtered.Count} pets";
+        foreach (var row in filteredList) _displayedPets.Add(row);
+        
+        if (!string.IsNullOrEmpty(_currentFilterCustomerId))
+        {
+            var ownerName = _allCustomers.FirstOrDefault(c => c.Id == _currentFilterCustomerId)?.FullName ?? _currentFilterCustomerId;
+            lblPetCount.Text = $"Showing {filteredList.Count} pets (Filtered by: {ownerName})";
+        }
+        else
+        {
+            lblPetCount.Text = $"Showing {filteredList.Count} pets";
+        }
+    }
+
+    public void FilterByCustomer(string customerId)
+    {
+        _currentFilterCustomerId = customerId;
+        txtSearch.Text = ""; 
+        RefreshDisplay();
+    }
+
+    public void ClearFilter()
+    {
+        _currentFilterCustomerId = "";
+        RefreshDisplay();
     }
 
     private void txtSearch_TextChanged(object? sender, TextChangedEventArgs e) => RefreshDisplay();
@@ -78,8 +111,7 @@ public partial class PetsView : UserControl
         btnEdit.IsEnabled = btnDelete.IsEnabled = lstPets.SelectedItem != null;
     }
 
-    // ─── Dialog ──────────────────────────────────────────────────────────────
-
+    // ─── Dialog Logic ────────────────────────────────────────────────────────
     private void OpenDialog(Pet? p = null)
     {
         _isEditMode = p != null;
@@ -97,8 +129,10 @@ public partial class PetsView : UserControl
                 ? new DateTime(p.LastVaccineDate.Value.Year, p.LastVaccineDate.Value.Month, p.LastVaccineDate.Value.Day)
                 : null;
             txtDialogChip.Text = p.ChipNumber ?? "";
-            var ownerIdx = _allCustomers.FindIndex(c => c.Id == p.OwnerId);
-            cbDialogOwner.SelectedIndex = ownerIdx >= 0 ? ownerIdx : -1;
+            
+            // תיקון באג 2 בעריכה: מציאת השם המדויק לפי ה-ID
+            var owner = _allCustomers.FirstOrDefault(c => c.Id == p.OwnerId);
+            cbDialogOwner.SelectedItem = owner?.FullName;
         }
         else
         {
@@ -109,6 +143,12 @@ public partial class PetsView : UserControl
             dpDialogVaccineDate.SelectedDate = null;
             txtDialogChip.Text = "";
             cbDialogOwner.SelectedIndex = -1;
+            
+            if (!string.IsNullOrEmpty(_currentFilterCustomerId))
+            {
+                var owner = _allCustomers.FirstOrDefault(c => c.Id == _currentFilterCustomerId);
+                cbDialogOwner.SelectedItem = owner?.FullName;
+            }
         }
 
         lblDialogError.IsVisible = false;
@@ -121,7 +161,6 @@ public partial class PetsView : UserControl
     {
         try
         {
-            // Validate name – Hebrew + English letters and spaces only
             var name = txtDialogName.Text?.Trim() ?? "";
             if (string.IsNullOrEmpty(name) || !Regex.IsMatch(name, @"^[\u0590-\u05FFa-zA-Z\s]+$"))
             {
@@ -129,51 +168,37 @@ public partial class PetsView : UserControl
                 return;
             }
 
-            // Validate pet type
             if (cbDialogPetType.SelectedItem is not string petType)
             {
                 ShowError("יש לבחור סוג חיה.");
                 return;
             }
 
-            // Validate weight
             if (!decimal.TryParse(txtDialogWeight.Text?.Replace(',', '.'),
                     System.Globalization.NumberStyles.Any,
                     System.Globalization.CultureInfo.InvariantCulture,
-                    out var weight)
-                || weight < 0.1m || weight > 100m)
+                    out var weight) || weight <= 0m || weight > 100m)
             {
-                ShowError("המשקל חייב להיות מספר עשרוני בין 0.1 ל-100 ק\"ג.");
+                ShowError("המשקל חייב להיות מספר עשרוני חוקי (לדוגמה: 4.5).");
                 return;
             }
 
-            // Validate birth date
             if (dpDialogBirthDate.SelectedDate is not DateTime birthDateTime)
             {
                 ShowError("יש לבחור תאריך לידה.");
                 return;
             }
             var birthDate = DateOnly.FromDateTime(birthDateTime);
-            if (birthDate > DateOnly.FromDateTime(DateTime.Today))
+
+            // תיקון באג 2 בשמירה: עובדים עם העצם עצמו ולא עם האינדקס!
+            var selectedOwnerName = cbDialogOwner.SelectedItem as string;
+            var owner = _allCustomers.FirstOrDefault(c => c.FullName == selectedOwnerName);
+            if (owner == null)
             {
-                ShowError("תאריך לידה לא יכול להיות תאריך עתידי.");
-                return;
-            }
-            if (birthDate.Year < 2000)
-            {
-                ShowError("תאריך לידה לא יכול להיות לפני שנת 2000.");
+                ShowError("יש לשייך את החיה ללקוח קיים מתוך הרשימה.");
                 return;
             }
 
-            // Validate owner
-            if (cbDialogOwner.SelectedIndex < 0)
-            {
-                ShowError("יש לשייך את החיה ללקוח קיים.");
-                return;
-            }
-            var owner = _allCustomers[cbDialogOwner.SelectedIndex];
-
-            // Vaccine date (optional)
             DateOnly? vaccineDate = null;
             if (dpDialogVaccineDate.SelectedDate is DateTime vaccineDateTime)
                 vaccineDate = DateOnly.FromDateTime(vaccineDateTime);
@@ -184,7 +209,7 @@ public partial class PetsView : UserControl
                 PetType = petType,
                 Weight = weight,
                 BirthDate = birthDate,
-                OwnerId = owner.Id,
+                OwnerId = owner.Id, // עכשיו זה ייקח את התעודת זהות הנכונה ב-100%!
                 LastVaccineDate = vaccineDate,
                 ChipNumber = string.IsNullOrWhiteSpace(txtDialogChip.Text) ? null : txtDialogChip.Text.Trim()
             };
@@ -205,30 +230,14 @@ public partial class PetsView : UserControl
         catch (Exception ex) { ShowError(ex.Message); }
     }
 
-    private void ShowError(string msg)
-    {
-        lblDialogError.Text = msg;
-        lblDialogError.IsVisible = true;
-    }
-
-    // ─── Toolbar buttons ─────────────────────────────────────────────────────
+    private void ShowError(string msg) { lblDialogError.Text = "⚠ " + msg; lblDialogError.IsVisible = true; }
 
     private void btnAddPet_Click(object? sender, RoutedEventArgs e) => OpenDialog();
 
     private void btnEdit_Click(object? sender, RoutedEventArgs e)
     {
         if (lstPets.SelectedItem is not PetRow r) return;
-        OpenDialog(new Pet
-        {
-            Id = r.Id,
-            Name = r.Name,
-            PetType = r.PetType,
-            Weight = r.Weight,
-            BirthDate = r.BirthDate,
-            OwnerId = r.OwnerId,
-            LastVaccineDate = r.LastVaccineDate,
-            ChipNumber = r.ChipNumber
-        });
+        OpenDialog(new Pet { Id = r.Id, Name = r.Name, PetType = r.PetType, Weight = r.Weight, BirthDate = r.BirthDate, OwnerId = r.OwnerId, LastVaccineDate = r.LastVaccineDate, ChipNumber = r.ChipNumber });
     }
 
     private async void btnDelete_Click(object? sender, RoutedEventArgs e)
@@ -240,8 +249,6 @@ public partial class PetsView : UserControl
         }
     }
 }
-
-// ─── Display row ─────────────────────────────────────────────────────────────
 
 public class PetRow
 {

@@ -3,7 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using ClinicVetsSystem.Models;
 
-namespace ClinicVetsSystem; // שים לב! הוספתי כאן את ה-S הקריטית
+namespace ClinicVetsSystem;
 
 public partial class MainMenuWindow : Window
 {
@@ -15,10 +15,8 @@ public partial class MainMenuWindow : Window
         _loggedInStaff = staff;
         
         SetupMenuForRole();
-        SetActiveTab("Dashboard"); // קביעת הטאב ההתחלתי שיוצג
+        SetActiveTab("Dashboard"); 
     }
-
-    // ─── Custom Window Chrome Logic ──────────────────────────────────────────
 
     private void TitleBar_PointerPressed(object sender, PointerPressedEventArgs e)
     {
@@ -30,16 +28,12 @@ public partial class MainMenuWindow : Window
     private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
-
-    // ─── Role Authorization & SPA Routing ────────────────────────────────────
-
     private void SetupMenuForRole()
     {
         lblGreeting.Text = $"Morning, {_loggedInStaff.Username}";
         lblTopName.Text = _loggedInStaff.Username;
         lblTopRole.Text = _loggedInStaff.Role.ToUpper();
 
-        // הסתרת הכפתורים הנכונים לפי תפקיד
         if (_loggedInStaff.Role == "מזכיר/ה")
         {
             btnNavCustomers.IsVisible = true;
@@ -52,19 +46,17 @@ public partial class MainMenuWindow : Window
         }
     }
 
-    private void SetActiveTab(string tabName)
+    // הוספנו כאן את המשתנה clearFilters (ברירת מחדל: true)
+    private void SetActiveTab(string tabName, bool clearFilters = true)
     {
-        // 1. איפוס הסגנון של כל כפתורי הניווט (מסיר את המחלקה active)
         btnNavDashboard.Classes.Remove("active");
         btnNavCustomers.Classes.Remove("active");
         btnNavPets.Classes.Remove("active");
 
-        // 2. הסתרת כל הפאנלים
         DashboardPanel.IsVisible = false;
         CustomersPanel.IsVisible = false;
         PetsPanel.IsVisible = false;
 
-        // 3. הפעלת הפאנל והכפתור הרלוונטי בלבד
         switch (tabName)
         {
             case "Dashboard":
@@ -79,24 +71,32 @@ public partial class MainMenuWindow : Window
             case "Pets":
                 btnNavPets.Classes.Add("active");
                 PetsPanel.IsVisible = true;
+                
+                // אם הגענו מהתפריט הרגיל, ננקה את הסינון כדי לראות את כל החיות
+                if (clearFilters)
+                {
+                    PetsPanel.ClearFilter();
+                }
+                
                 _ = PetsPanel.LoadDataAsync();
                 break;
         }
     }
 
-    // ─── Events ──────────────────────────────────────────────────────────────
-
     private void btnNavDashboard_Click(object sender, RoutedEventArgs e) => SetActiveTab("Dashboard");
     private void btnNavCustomers_Click(object sender, RoutedEventArgs e) => SetActiveTab("Customers");
-    private void btnPets_Click(object sender, RoutedEventArgs e) => SetActiveTab("Pets");
+    
+    // לחיצה רגילה בתפריט - מנקה את הסינון!
+    private void btnPets_Click(object sender, RoutedEventArgs e) => SetActiveTab("Pets"); 
+    
     private void btnVisits_Click(object sender, RoutedEventArgs e) { /* יפותח בהמשך */ }
     private void BtnCalender_OnClick_Click(object? sender, RoutedEventArgs e) { /* יפותח בהמשך */ }
 
-    // הפונקציה שהייתה חסרה וגרמה לשגיאה שצילמת!
+    // הלוגיקה שתוקנה עבור באג 1! מעבירה לטאב בלי לנקות את הסינון, ומפעילה את הסינון עצמו
     public void GoToPetsForCustomer(string customerId)
     {
-        SetActiveTab("Pets");
-        // בעתיד נוסיף כאן פקודה שתסנן את חיות המחמד לפי customerId
+        SetActiveTab("Pets", clearFilters: false);
+        PetsPanel.FilterByCustomer(customerId);
     }
 
     private void btnLogout_Click(object sender, RoutedEventArgs e)
