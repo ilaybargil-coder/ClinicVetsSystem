@@ -1,0 +1,101 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="ClinicVetsSystem.DashboardView"
+             FontFamily="Inter, sans-serif">
+
+    <UserControl.Styles>
+        <Style Selector="Border.statCard">
+            <Setter Property="CornerRadius" Value="24"/>
+            <Setter Property="Padding" Value="24,20"/>
+            <Setter Property="BoxShadow" Value="0 4 16 0 #08005236"/>
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="48,28,48,48" Spacing="28">
+
+            <!-- ── Header ───────────────────────────────────────────── -->
+            <Grid ColumnDefinitions="*, Auto">
+                <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+                    <TextBlock Name="lblGreetingMain" FontSize="32" FontWeight="Black"
+                               Foreground="#191c1e" Text="שלום!"/>
+                    <TextBlock Name="lblDateLine" FontSize="15" FontWeight="Medium"
+                               Foreground="#3c4a42" Text="טוען..."/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Name="lblTopName" FontSize="14" FontWeight="Bold"
+                                   Foreground="#191c1e" HorizontalAlignment="Right"/>
+                        <TextBlock Name="lblTopRole" FontSize="10" FontWeight="Black"
+                                   Foreground="#64748b" LetterSpacing="1" HorizontalAlignment="Right"/>
+                    </StackPanel>
+                    <Border Width="48" Height="48" CornerRadius="24" Background="#1e293b"
+                            BorderBrush="White" BorderThickness="2"
+                            BoxShadow="0 4 12 0 #20000000">
+                        <TextBlock Text="👩‍⚕️" HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" FontSize="24"/>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- ── Stats row ────────────────────────────────────────── -->
+            <Grid ColumnDefinitions="*, *, *" ColumnSpacing="16">
+                <Border Grid.Column="0" Classes="statCard" Background="#f0fdf4">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="תורים היום" FontSize="12" FontWeight="Bold"
+                                   Foreground="#64748b" LetterSpacing="0.5"/>
+                        <TextBlock Name="lblStatTotal" Text="—" FontSize="36"
+                                   FontWeight="Black" Foreground="#006c49"/>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Classes="statCard" Background="#fefce8">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="ממתינים לטיפול" FontSize="12" FontWeight="Bold"
+                                   Foreground="#64748b" LetterSpacing="0.5"/>
+                        <TextBlock Name="lblStatPending" Text="—" FontSize="36"
+                                   FontWeight="Black" Foreground="#a16207"/>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Classes="statCard" Background="#eff6ff">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="טופלו היום" FontSize="12" FontWeight="Bold"
+                                   Foreground="#64748b" LetterSpacing="0.5"/>
+                        <TextBlock Name="lblStatDone" Text="—" FontSize="36"
+                                   FontWeight="Black" Foreground="#1d4ed8"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- ── Main: appointments + sidebar ────────────────────── -->
+            <Grid ColumnDefinitions="2*, *" ColumnSpacing="28">
+
+                <!-- Left: Today's appointments -->
+                <StackPanel Grid.Column="0" Spacing="16">
+                    <TextBlock Text="תורים להיום" FontSize="20" FontWeight="Bold"
+                               Foreground="#191c1e"/>
+                    <StackPanel Name="DashboardAppsList" Spacing="12"/>
+                </StackPanel>
+
+                <!-- Right: sidebar -->
+                <StackPanel Grid.Column="1" Spacing="20">
+
+                    <!-- Low stock -->
+                    <Border Background="#ffffff" CornerRadius="24"
+                            BoxShadow="0 4 16 0 #08005236" Padding="24">
+                        <StackPanel Spacing="14">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="📦" FontSize="16" VerticalAlignment="Center"/>
+                                <TextBlock Text="מלאי נמוך" FontSize="16" FontWeight="Bold"
+                                           Foreground="#1e293b" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Border Height="1" Background="#f1f5f9"/>
+                            <StackPanel Name="LowStockList" Spacing="8"/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

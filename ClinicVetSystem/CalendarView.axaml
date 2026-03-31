@@ -1,0 +1,322 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:models="clr-namespace:ClinicVetsSystem.Models"
+             x:Class="ClinicVetsSystem.CalendarView"
+             FontFamily="Inter, sans-serif">
+
+    <UserControl.Styles>
+
+        <Style Selector="Border.glassCard">
+            <Setter Property="Background" Value="#ffffff"/>
+            <Setter Property="CornerRadius" Value="32"/>
+            <Setter Property="BoxShadow" Value="0 10 30 0 #08005236"/>
+        </Style>
+
+        <Style Selector="Button.primaryAction">
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.primaryAction:pointerover">
+            <Setter Property="RenderTransform" Value="scale(0.97)"/>
+        </Style>
+
+        <Style Selector="Button.navArrow">
+            <Setter Property="Background" Value="#f1f5f9"/>
+            <Setter Property="Foreground" Value="#475569"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.navArrow:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#e2e8f0"/>
+        </Style>
+
+        <!-- Shared form input look (TextBox) -->
+        <Style Selector="TextBox.formInput">
+            <Setter Property="Background" Value="#f2f4f6"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderBrush" Value="#e2e8f0"/>
+            <Setter Property="CornerRadius" Value="12,12,0,0"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="TextBox.formInput:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#006c49"/>
+        </Style>
+
+        <!-- Shared form input look (ComboBox) -->
+        <Style Selector="ComboBox.formInput">
+            <Setter Property="Background" Value="#f2f4f6"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="BorderBrush" Value="#e2e8f0"/>
+            <Setter Property="CornerRadius" Value="12,12,0,0"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <Style Selector="Button.dialogClose">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#94a3b8"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.dialogClose:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#f1f5f9"/>
+            <Setter Property="Foreground" Value="#1e293b"/>
+        </Style>
+
+        <Style Selector="Button.cancelBtn">
+            <Setter Property="Background" Value="#f1f5f9"/>
+            <Setter Property="Foreground" Value="#64748b"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="20,14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
+
+    </UserControl.Styles>
+
+    <!-- Root: header | week-nav | day-cards | appointments -->
+    <Grid RowDefinitions="Auto, Auto, Auto, *">
+
+        <!-- ══════════════════════════════════════ -->
+        <!--  ROW 0 — Page header                  -->
+        <!-- ══════════════════════════════════════ -->
+        <Grid Grid.Row="0" Margin="32,28,32,20" ColumnDefinitions="*, Auto">
+            <StackPanel Grid.Column="0" Spacing="4">
+                <TextBlock Text="לוח זמנים" FontSize="32" FontWeight="Black" Foreground="#006c49"/>
+                <TextBlock Name="lblDateSubtitle" FontSize="14" Foreground="#64748b"/>
+            </StackPanel>
+
+            <Button Grid.Column="1" Name="btnNewAppointment"
+                    Classes="primaryAction" Padding="22,14"
+                    Click="BtnNewAppointment_Click" VerticalAlignment="Center">
+                <Button.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                        <GradientStop Color="#006c49" Offset="0"/>
+                        <GradientStop Color="#10b981" Offset="1"/>
+                    </LinearGradientBrush>
+                </Button.Background>
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock Text="+" FontSize="22" FontWeight="Black" VerticalAlignment="Center"/>
+                    <TextBlock Text="פגישה חדשה" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+        </Grid>
+
+        <!-- ══════════════════════════════════════ -->
+        <!--  ROW 1 — Week navigation              -->
+        <!-- ══════════════════════════════════════ -->
+        <Border Grid.Row="1" Classes="glassCard" Margin="32,0,32,16" Padding="28,18">
+            <Grid ColumnDefinitions="Auto, *, Auto">
+                <Button Grid.Column="0" Classes="navArrow" Content="‹" Click="BtnPrevWeek_Click"/>
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="2">
+                    <TextBlock Name="lblWeekRange"
+                               FontSize="17" FontWeight="Bold" Foreground="#1e293b"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Name="lblWeekNote"
+                               FontSize="12" Foreground="#94a3b8"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+                <Button Grid.Column="2" Classes="navArrow" Content="›" Click="BtnNextWeek_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- ══════════════════════════════════════ -->
+        <!--  ROW 2 — Day cards (built in code)    -->
+        <!-- ══════════════════════════════════════ -->
+        <Grid Grid.Row="2"
+              Name="WeekDaysGrid"
+              Margin="32,0,32,16"
+              ColumnDefinitions="*, *, *, *, *"
+              ColumnSpacing="12"/>
+
+        <!-- ══════════════════════════════════════ -->
+        <!--  ROW 3 — Appointment list             -->
+        <!-- ══════════════════════════════════════ -->
+        <ScrollViewer Grid.Row="3" Margin="32,0,32,32"
+                      HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="glassCard" Padding="0">
+                <Grid RowDefinitions="Auto, *">
+
+                    <Border Grid.Row="0" Background="#f8fafc"
+                            CornerRadius="32,32,0,0" Padding="32,22">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Name="lblSelectedDayTitle"
+                                           FontSize="20" FontWeight="Bold" Foreground="#1e293b"/>
+                                <TextBlock Name="lblSelectedDayCount"
+                                           FontSize="13" Foreground="#64748b"/>
+                            </StackPanel>
+                            <Border Grid.Column="1" Name="lblTodayBadge"
+                                    Background="#dcfce7" CornerRadius="20"
+                                    Padding="14,6" VerticalAlignment="Center">
+                                <TextBlock Text="היום" FontSize="12"
+                                           FontWeight="Bold" Foreground="#15803d"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <StackPanel Grid.Row="1" Name="AppointmentsList"
+                                Margin="28,20,28,28" Spacing="12"/>
+                </Grid>
+            </Border>
+        </ScrollViewer>
+
+        <!-- ══════════════════════════════════════ -->
+        <!--  OVERLAY — New Appointment dialog     -->
+        <!-- ══════════════════════════════════════ -->
+        <Grid Grid.Row="0" Grid.RowSpan="4"
+              Name="NewAppointmentOverlay"
+              Background="#BB000000"
+              IsVisible="False"
+              ZIndex="100">
+
+            <Border Background="#ffffff"
+                    CornerRadius="32"
+                    MaxWidth="620"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    BoxShadow="0 24 64 0 #28005236"
+                    Padding="40"
+                    Margin="32">
+                <StackPanel Spacing="0">
+
+                    <!-- Dialog header -->
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,8">
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="פגישה חדשה"
+                                       FontSize="24" FontWeight="Black" Foreground="#006c49"/>
+                            <TextBlock Text="בחר לקוח וחיה קיימים, ואז הזן פרטי הפגישה"
+                                       FontSize="13" Foreground="#64748b" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Classes="dialogClose"
+                                Content="✕" VerticalAlignment="Top"
+                                Click="CloseDialog_Click"/>
+                    </Grid>
+
+                    <Border Height="1" Background="#f1f5f9" Margin="0,16,0,24"/>
+
+                    <StackPanel Spacing="16">
+
+                        <!-- Date -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="תאריך הפגישה" FontSize="12"
+                                       FontWeight="SemiBold" Foreground="#64748b"/>
+                            <DatePicker Name="dpAppointmentDate" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+
+                        <!-- Time -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="שעה" FontSize="12"
+                                       FontWeight="SemiBold" Foreground="#64748b"/>
+                            <ComboBox Name="cbTime" Classes="formInput"
+                                      HorizontalAlignment="Stretch"
+                                      PlaceholderText="בחר שעה..."/>
+                        </StackPanel>
+
+                        <!-- Customer -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="לקוח" FontSize="12"
+                                       FontWeight="SemiBold" Foreground="#64748b"/>
+                            <ComboBox Name="cbCustomer" Classes="formInput"
+                                      HorizontalAlignment="Stretch"
+                                      PlaceholderText="חפש לקוח קיים..."
+                                      SelectionChanged="CbCustomer_SelectionChanged">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:Customer">
+                                        <TextBlock Text="{Binding FullName}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Pet (enabled only after customer is chosen) -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="חיה" FontSize="12"
+                                       FontWeight="SemiBold" Foreground="#64748b"/>
+                            <ComboBox Name="cbPet" Classes="formInput"
+                                      HorizontalAlignment="Stretch"
+                                      PlaceholderText="בחר קודם לקוח..."
+                                      IsEnabled="False">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:Pet">
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- Vet -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="וטרינר מטפל" FontSize="12"
+                                       FontWeight="SemiBold" Foreground="#64748b"/>
+                            <ComboBox Name="cbVet" Classes="formInput"
+                                      HorizontalAlignment="Stretch"
+                                      PlaceholderText="בחר וטרינר...">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:Staff">
+                                        <TextBlock Text="{Binding Username}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <!-- הערה לוטרינר -->
+                        <Border Background="#fefce8" CornerRadius="12" Padding="14,10">
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <TextBlock Text="ℹ️" FontSize="14" VerticalAlignment="Center"/>
+                                <TextBlock Text="סיבת הביקור והטיפול ימולאו על ידי הוטרינר בעת הביקור"
+                                           FontSize="12" Foreground="#92400e"
+                                           VerticalAlignment="Center" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Status -->
+                        <TextBlock Name="lblDialogStatus" IsVisible="False"
+                                   FontWeight="SemiBold" FontSize="13"
+                                   TextAlignment="Center"/>
+
+                        <!-- Actions -->
+                        <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12" Margin="0,8,0,0">
+                            <Button Grid.Column="0" Classes="cancelBtn"
+                                    Content="ביטול" Click="CloseDialog_Click"/>
+                            <Button Grid.Column="1" Name="btnSaveAppointment"
+                                    Classes="primaryAction"
+                                    Padding="28,14" FontSize="14"
+                                    Click="BtnSaveAppointment_Click">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                        <GradientStop Color="#006c49" Offset="0"/>
+                                        <GradientStop Color="#10b981" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                                <TextBlock Text="קבע פגישה ✓" FontWeight="Bold"/>
+                            </Button>
+                        </Grid>
+
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+    </Grid>
+</UserControl>
