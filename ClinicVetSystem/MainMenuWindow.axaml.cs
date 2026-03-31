@@ -31,9 +31,6 @@ public partial class MainMenuWindow : Window
 
     private void SetupMenuForRole()
     {
-        lblGreeting.Text = $"Morning, {_loggedInStaff.Username}";
-        lblTopName.Text = _loggedInStaff.Username;
-        lblTopRole.Text = _loggedInStaff.Role.ToUpper();
 
         if (_loggedInStaff.Role == "מזכיר/ה")
         {
@@ -65,6 +62,7 @@ public partial class MainMenuWindow : Window
             case "Dashboard":
                 btnNavDashboard.Classes.Add("active");
                 DashboardPanel.IsVisible = true;
+                _ = DashboardPanel.LoadDataAsync(_loggedInStaff);
                 break;
             case "Customers":
                 btnNavCustomers.Classes.Add("active");
@@ -104,7 +102,15 @@ public partial class MainMenuWindow : Window
     private void btnNavDashboard_Click(object sender, RoutedEventArgs e) => SetActiveTab("Dashboard");
     private void btnNavCustomers_Click(object sender, RoutedEventArgs e) => SetActiveTab("Customers");
     private void btnPets_Click(object sender, RoutedEventArgs e) => SetActiveTab("Pets");
-    private void BtnCalender_OnClick_Click(object? sender, RoutedEventArgs e) { }
+    private void BtnCalender_OnClick_Click(object? sender, RoutedEventArgs e)
+        => NavigateTo(new CalendarView(), sender!);
+
+    private void BtnSidebarNewAppt_Click(object? sender, RoutedEventArgs e)
+    {
+        // Navigate to calendar and auto-open the New Appointment dialog after data loads
+        var calView = new CalendarView { OpenDialogAfterLoad = true };
+        NavigateTo(calView, btnCalender);
+    }
     private void btnInventory_Click(object? sender, RoutedEventArgs e) => NavigateTo(new InventoryView(), sender!);
 
     private void btnVisits_Click(object? sender, RoutedEventArgs e)

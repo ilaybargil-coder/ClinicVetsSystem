@@ -4,195 +4,506 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Media;
 using ClinicVetsSystem.Models;
 
 namespace ClinicVetsSystem;
 
 public partial class CustomersView : UserControl
 {
-    private List<CustomerRow> _allCustomers = new();
+    // ── State ──────────────────────────────────────────────────────────────
+    private List<CustomerRow>                   _allCustomers     = new();
     private readonly ObservableCollection<CustomerRow> _displayedCustomers = new();
-    private bool _isEditMode = false;
+    private CustomerRow?                        _selectedCustomer;
+    private bool                                _isEditMode       = false;
 
+    // Avatar colours — one per customer (hashed from name)
+    private static readonly string[] AvatarBg  = { "#f0fdf4", "#eff6ff", "#fdf4ff", "#fffbeb", "#fef2f2" };
+    private static readonly string[] AvatarFg  = { "#006c49", "#1d4ed8", "#7c3aed", "#a16207", "#dc2626" };
+
+    // Pet type palette
+    private static readonly (string Bg, string Fg, string Emoji)[] PetPalette =
+    {
+        ("#dcfce7", "#15803d", "🐕"),  // כלב
+        ("#dbeafe", "#1d4ed8", "🐈"),  // חתול
+        ("#fef9c3", "#a16207", "🐦"),  // ציפור
+        ("#ede9fe", "#6d28d9", "🦎"),  // זוחל
+        ("#f1f5f9", "#475569", "🐾"),  // other
+    };
+
+    // ── Constructor ────────────────────────────────────────────────────────
     public CustomersView()
     {
         InitializeComponent();
         lstCustomers.ItemsSource = _displayedCustomers;
+        cbAddPetType.ItemsSource = new[] { "כלב", "חתול", "ציפור", "זוחל" };
     }
 
+    // ── Load customers from DB ─────────────────────────────────────────────
     public async Task LoadDataAsync()
     {
-        try {
-            lblStatus.Text = "Syncing...";
-            lblStatus.Foreground = Avalonia.Media.SolidColorBrush.Parse("#64748b");
-            var result = await SupabaseService.Client!.From<Customer>().Order(c => c.FullName, Postgrest.Constants.Ordering.Ascending).Get();
+        try
+        {
+            lblStatus.Text = "מסנכרן...";
+            var result = await SupabaseService.Client!
+                .From<Customer>()
+                .Order(c => c.FullName, Postgrest.Constants.Ordering.Ascending)
+                .Get();
+
             _allCustomers = result.Models.Select(c => new CustomerRow(c)).ToList();
             RefreshDisplay();
-            lblStatus.Text = "Up to date ✓";
-            lblStatus.Foreground = Avalonia.Media.SolidColorBrush.Parse("#10b981");
-        } catch (Exception) { 
-            lblStatus.Text = "⚠ שגיאה בטעינת נתונים (בדוק חיבור רשת)."; 
-            lblStatus.Foreground = Avalonia.Media.SolidColorBrush.Parse("#dc2626");
+            lblStatus.Text = "מעודכן ✓";
+        }
+        catch (Exception)
+        {
+            lblStatus.Text = "⚠ שגיאה בטעינת נתונים";
         }
     }
 
     private void RefreshDisplay()
     {
-        var query = txtSearch.Text?.Trim().ToLower() ?? "";
-        var filtered = string.IsNullOrEmpty(query) 
-            ? _allCustomers 
-            : _allCustomers.Where(c => c.Id.Contains(query) || c.Phone.Contains(query)).ToList();
-            
+        var q = txtSearch.Text?.Trim().ToLower() ?? "";
+        var filtered = string.IsNullOrEmpty(q)
+            ? _allCustomers
+            : _allCustomers
+                .Where(c => c.Id.Contains(q)
+                         || c.Phone.Contains(q)
+                         || c.FullName.ToLower().Contains(q))
+                .ToList();
+
         _displayedCustomers.Clear();
         foreach (var row in filtered) _displayedCustomers.Add(row);
-        lblCustomerCount.Text = $"Showing {filtered.Count} clients";
+        lblCustomerCount.Text = $"{filtered.Count} לקוחות רשומים";
     }
 
-    private void txtSearch_TextChanged(object? sender, TextChangedEventArgs e) => RefreshDisplay();
-    
+    // ── Search ─────────────────────────────────────────────────────────────
+    private void txtSearch_TextChanged(object? sender, TextChangedEventArgs e)
+        => RefreshDisplay();
+
+    // ── List selection → load profile ─────────────────────────────────────
     private void lstCustomers_SelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        bool hasSelection = lstCustomers.SelectedItem != null;
-        btnEdit.IsEnabled = hasSelection;
-        btnDelete.IsEnabled = hasSelection;
-        btnViewPets.IsEnabled = hasSelection;
+        if (lstCustomers.SelectedItem is CustomerRow row)
+        {
+            _selectedCustomer = row;
+            _ = LoadCustomerProfileAsync(row);
+        }
     }
 
-    // ─── Dialog Logic ──────────────────────────────────────────────────
+    // ── Profile panel ──────────────────────────────────────────────────────
+    private async Task LoadCustomerProfileAsync(CustomerRow row)
+    {
+        // Switch panels
+        EmptyStatePanel.IsVisible = false;
+        ProfilePanel.IsVisible    = true;
 
+        // Avatar
+        int colorIdx = Math.Abs(row.FullName.GetHashCode()) % AvatarBg.Length;
+        AvatarBorder.Background    = new SolidColorBrush(Color.Parse(AvatarBg[colorIdx]));
+        lblInitials.Foreground     = new SolidColorBrush(Color.Parse(AvatarFg[colorIdx]));
+        lblInitials.Text           = BuildInitials(row.FullName);
+
+        // Details
+        lblProfileName.Text  = row.FullName;
+        lblProfileId.Text    = row.Id;
+        lblProfilePhone.Text = row.Phone;
+        lblProfileEmail.Text = string.IsNullOrEmpty(row.Email) ? "—" : row.Email;
+        lblProfileSince.Text = $"לקוח מאז {row.CreatedAtFormatted}";
+
+        // Load pets for this customer
+        await LoadCustomerPetsAsync(row.Id);
+    }
+
+    private async Task LoadCustomerPetsAsync(string customerId)
+    {
+        PetsList.Children.Clear();
+        lblPetCount.Text = "טוען...";
+
+        try
+        {
+            var resp = await SupabaseService.Client!
+                .From<Pet>()
+                .Where(p => p.OwnerId == customerId)
+                .Get();
+
+            var pets = resp.Models;
+            lblPetCount.Text = pets.Count > 0
+                ? $"{pets.Count} חיות רשומות"
+                : "אין חיות רשומות עדיין";
+
+            if (pets.Count == 0)
+            {
+                PetsList.Children.Add(BuildPetEmptyState());
+                return;
+            }
+
+            foreach (var pet in pets)
+                PetsList.Children.Add(BuildPetCard(pet));
+        }
+        catch (Exception)
+        {
+            lblPetCount.Text = "שגיאה בטעינת חיות";
+        }
+    }
+
+    // ── Pet card builder ───────────────────────────────────────────────────
+    private static Control BuildPetEmptyState() =>
+        new Border
+        {
+            Background   = new SolidColorBrush(Color.Parse("#f8fafc")),
+            CornerRadius = new CornerRadius(16),
+            Padding      = new Thickness(0, 20),
+            Child = new TextBlock
+            {
+                Text = "לחץ על '+ הוסף חיה' כדי לרשום את חיית המחמד הראשונה",
+                FontSize = 13,
+                Foreground = new SolidColorBrush(Color.Parse("#94a3b8")),
+                HorizontalAlignment = HorizontalAlignment.Center
+            }
+        };
+
+    private static Border BuildPetCard(Pet pet)
+    {
+        var (bg, fg, emoji) = pet.PetType switch
+        {
+            "כלב"  => PetPalette[0],
+            "חתול" => PetPalette[1],
+            "ציפור"=> PetPalette[2],
+            "זוחל" => PetPalette[3],
+            _      => PetPalette[4]
+        };
+
+        var bgColor = Color.Parse(bg);
+        var fgColor = Color.Parse(fg);
+        var muteFg  = Color.FromArgb(160, fgColor.R, fgColor.G, fgColor.B);
+
+        // Vaccine badge
+        bool vaccineOk = !pet.NeedsVaccine;
+        var vaccineBg  = vaccineOk ? Color.Parse("#dcfce7") : Color.Parse("#fef9c3");
+        var vaccineFg  = vaccineOk ? Color.Parse("#15803d") : Color.Parse("#a16207");
+        var vaccineText = vaccineOk ? "✓ חיסון תקין" : "⚠ חיסון פג";
+
+        // Left: emoji circle
+        var emojiCircle = new Border
+        {
+            Width = 48, Height = 48,
+            CornerRadius = new CornerRadius(14),
+            Background   = new SolidColorBrush(Color.FromArgb(60, fgColor.R, fgColor.G, fgColor.B)),
+            Child = new TextBlock
+            {
+                Text = emoji, FontSize = 22,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment   = VerticalAlignment.Center
+            }
+        };
+
+        // Right: details
+        var nameRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        nameRow.Children.Add(new TextBlock
+        {
+            Text = pet.Name, FontSize = 15, FontWeight = FontWeight.Bold,
+            Foreground = new SolidColorBrush(fgColor),
+            VerticalAlignment = VerticalAlignment.Center
+        });
+        nameRow.Children.Add(new Border
+        {
+            Background   = new SolidColorBrush(vaccineBg),
+            CornerRadius = new CornerRadius(8),
+            Padding      = new Thickness(8, 2),
+            Child = new TextBlock
+            {
+                Text = vaccineText, FontSize = 11, FontWeight = FontWeight.SemiBold,
+                Foreground = new SolidColorBrush(vaccineFg)
+            }
+        });
+
+        var subtitleParts = new List<string>();
+        if (!string.IsNullOrEmpty(pet.PetType)) subtitleParts.Add(pet.PetType);
+        if (pet.Weight > 0) subtitleParts.Add($"{pet.Weight} ק\"ג");
+        if (pet.LastVaccineDate.HasValue)
+            subtitleParts.Add($"חיסון: {pet.LastVaccineDate.Value:dd/MM/yyyy}");
+
+        var details = new StackPanel { Spacing = 4, VerticalAlignment = VerticalAlignment.Center };
+        details.Children.Add(nameRow);
+        if (subtitleParts.Count > 0)
+            details.Children.Add(new TextBlock
+            {
+                Text = string.Join(" · ", subtitleParts),
+                FontSize = 12,
+                Foreground = new SolidColorBrush(muteFg)
+            });
+
+        var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto, *"), ColumnSpacing = 14 };
+        Grid.SetColumn(emojiCircle, 0);
+        Grid.SetColumn(details, 1);
+        row.Children.Add(emojiCircle);
+        row.Children.Add(details);
+
+        return new Border
+        {
+            Background   = new SolidColorBrush(bgColor),
+            CornerRadius = new CornerRadius(18),
+            Padding      = new Thickness(16, 12),
+            Child        = row
+        };
+    }
+
+    // ── Profile action buttons ─────────────────────────────────────────────
+    private void BtnEditProfile_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedCustomer == null) return;
+        OpenDialog(new Customer
+        {
+            Id       = _selectedCustomer.Id,
+            FullName = _selectedCustomer.FullName,
+            Phone    = _selectedCustomer.Phone,
+            Email    = _selectedCustomer.Email
+        });
+    }
+
+    private async void BtnDeleteProfile_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedCustomer == null) return;
+        try
+        {
+            await SupabaseService.Client!
+                .From<Customer>()
+                .Where(c => c.Id == _selectedCustomer.Id)
+                .Delete();
+
+            // Reset profile panel
+            _selectedCustomer = null;
+            ProfilePanel.IsVisible    = false;
+            EmptyStatePanel.IsVisible = true;
+            lstCustomers.SelectedItem = null;
+
+            await LoadDataAsync();
+        }
+        catch (Exception)
+        {
+            lblStatus.Text = "⚠ לא ניתן למחוק לקוח שיש לו חיות רשומות";
+        }
+    }
+
+    // ── Add Pet overlay ────────────────────────────────────────────────────
+    private void BtnAddPet_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedCustomer == null) return;
+        txtAddPetName.Text       = string.Empty;
+        txtAddPetWeight.Text     = string.Empty;
+        txtAddPetChip.Text       = string.Empty;
+        cbAddPetType.SelectedIndex  = -1;
+        dpAddPetBirth.SelectedDate  = null;
+        dpAddPetVaccine.SelectedDate = null;
+        lblAddPetError.IsVisible    = false;
+        lblAddPetSubtitle.Text      = $"ללקוח: {_selectedCustomer.FullName}";
+        AddPetOverlay.IsVisible     = true;
+    }
+
+    private void CloseAddPet_Click(object? sender, RoutedEventArgs e)
+        => AddPetOverlay.IsVisible = false;
+
+    private async void BtnSaveAddPet_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedCustomer == null) return;
+
+        var name    = txtAddPetName.Text?.Trim() ?? "";
+        var typeStr = cbAddPetType.SelectedItem?.ToString() ?? "";
+
+        if (string.IsNullOrEmpty(name))
+        {
+            ShowAddPetError("שם החיה הוא שדה חובה.");
+            return;
+        }
+        if (string.IsNullOrEmpty(typeStr))
+        {
+            ShowAddPetError("יש לבחור סוג חיה.");
+            return;
+        }
+
+        decimal.TryParse(txtAddPetWeight.Text, out var weight);
+
+        var birthDate = dpAddPetBirth.SelectedDate.HasValue
+            ? DateOnly.FromDateTime(dpAddPetBirth.SelectedDate.Value.DateTime)
+            : DateOnly.FromDateTime(DateTime.Today);
+
+        var vaccineDate = dpAddPetVaccine.SelectedDate.HasValue
+            ? (DateOnly?)DateOnly.FromDateTime(dpAddPetVaccine.SelectedDate.Value.DateTime)
+            : null;
+
+        var pet = new Pet
+        {
+            OwnerId       = _selectedCustomer.Id,
+            Name          = name,
+            PetType       = typeStr,
+            Weight        = weight,
+            BirthDate     = birthDate,
+            LastVaccineDate = vaccineDate,
+            ChipNumber    = string.IsNullOrWhiteSpace(txtAddPetChip.Text) ? null : txtAddPetChip.Text
+        };
+
+        try
+        {
+            btnSaveAddPet.IsEnabled = false;
+            await SupabaseService.Client!.From<Pet>().Insert(pet);
+            AddPetOverlay.IsVisible = false;
+            await LoadCustomerPetsAsync(_selectedCustomer.Id);
+        }
+        catch (Exception)
+        {
+            ShowAddPetError("שגיאה בשמירה, נסה שוב.");
+        }
+        finally
+        {
+            btnSaveAddPet.IsEnabled = true;
+        }
+    }
+
+    private void ShowAddPetError(string msg)
+    {
+        lblAddPetError.Text      = "⚠ " + msg;
+        lblAddPetError.IsVisible = true;
+    }
+
+    // ── Add / Edit customer dialog ─────────────────────────────────────────
     private void OpenDialog(Customer? c = null)
     {
         _isEditMode = c != null;
-        lblDialogTitle.Text = _isEditMode ? "Edit Client" : "Register Client";
-        txtDialogId.Text = c?.Id ?? "";
+
+        lblDialogTitle.Text    = _isEditMode ? "עריכת פרטי לקוח" : "רישום לקוח חדש";
+        lblSaveBtn.Text        = _isEditMode ? "שמור שינויים"     : "שמור לקוח";
+        txtDialogId.Text       = c?.Id       ?? "";
         txtDialogId.IsReadOnly = _isEditMode;
-        txtDialogId.Opacity = _isEditMode ? 0.6 : 1.0;
-        txtDialogName.Text = c?.FullName ?? "";
-        txtDialogPhone.Text = c?.Phone ?? "";
-        txtDialogEmail.Text = c?.Email ?? "";
+        txtDialogId.Opacity    = _isEditMode ? 0.5 : 1.0;
+        txtDialogName.Text     = c?.FullName ?? "";
+        txtDialogPhone.Text    = c?.Phone    ?? "";
+        txtDialogEmail.Text    = c?.Email    ?? "";
         lblDialogError.IsVisible = false;
-        ModalOverlay.IsVisible = true;
+        ModalOverlay.IsVisible   = true;
     }
 
-    private void btnCancelDialog_Click(object? sender, RoutedEventArgs e) => ModalOverlay.IsVisible = false;
+    private void btnCancelDialog_Click(object? sender, RoutedEventArgs e)
+        => ModalOverlay.IsVisible = false;
 
     private async void btnSaveDialog_Click(object? sender, RoutedEventArgs e)
     {
-        try {
-            var name = txtDialogName.Text?.Trim() ?? "";
-            var id = txtDialogId.Text?.Trim() ?? "";
+        try
+        {
+            var name  = txtDialogName.Text?.Trim()  ?? "";
+            var id    = txtDialogId.Text?.Trim()    ?? "";
             var phone = txtDialogPhone.Text?.Trim() ?? "";
             var email = txtDialogEmail.Text?.Trim() ?? "";
-            
-            // ולידציה שם (אותיות ורווחים)
-            if (string.IsNullOrEmpty(name) || !Regex.IsMatch(name, @"^[\u0590-\u05FFa-zA-Z\s]+$"))
+
+            if (string.IsNullOrEmpty(name) ||
+                !Regex.IsMatch(name, @"^[\u0590-\u05FFa-zA-Z\s]+$"))
             {
                 ShowDialogError("שם הלקוח חייב להכיל אותיות בלבד.");
                 return;
             }
-            
-            // ולידציה ת"ז (9 ספרות)
             if (string.IsNullOrEmpty(id) || !Regex.IsMatch(id, @"^\d{9}$"))
             {
                 ShowDialogError("תעודת הזהות חייבת להכיל בדיוק 9 ספרות.");
                 return;
             }
-
-            // תיקון באג 3: ולידציית טלפון (מתחיל ב-0, ויש בו 9 או 10 ספרות)
             if (string.IsNullOrEmpty(phone) || !Regex.IsMatch(phone, @"^0\d{8,9}$"))
             {
                 ShowDialogError("מספר הטלפון לא חוקי (חייב להתחיל ב-0 ולהכיל 9-10 ספרות).");
                 return;
             }
-
-            // תיקון באג 4 + הכנה ל-9: ולידציית אימייל מחמירה אם הוקלד משהו
-            if (!string.IsNullOrEmpty(email))
+            if (!string.IsNullOrEmpty(email) &&
+                !Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.(com|co\.il|org|net|ac\.il|gov\.il|edu)$",
+                               RegexOptions.IgnoreCase))
             {
-                // מאשר רק סיומות ידועות וחוסם דברים כמו .fucku
-                if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.(com|co\.il|org|net|ac\.il|gov\.il|edu)$", RegexOptions.IgnoreCase))
-                {
-                    ShowDialogError("כתובת האימייל אינה תקינה או בעלת סיומת לא חוקית.");
-                    return;
-                }
+                ShowDialogError("כתובת האימייל אינה תקינה.");
+                return;
             }
 
-            var customer = new Customer { 
-                Id = id, 
-                FullName = name, 
-                Phone = phone, 
-                Email = string.IsNullOrEmpty(email) ? null : email 
+            var customer = new Customer
+            {
+                Id       = id,
+                FullName = name,
+                Phone    = phone,
+                Email    = string.IsNullOrEmpty(email) ? null : email
             };
 
             var client = SupabaseService.Client;
             if (client == null) return;
 
-            if (_isEditMode) {
-                await client.From<Customer>().Where(x => x.Id == customer.Id)
+            if (_isEditMode)
+            {
+                await client.From<Customer>()
+                    .Where(x => x.Id == customer.Id)
                     .Set(x => x.FullName!, customer.FullName)
-                    .Set(x => x.Phone!, customer.Phone)
-                    .Set(x => x.Email!, customer.Email ?? "")
+                    .Set(x => x.Phone!,    customer.Phone)
+                    .Set(x => x.Email!,    customer.Email ?? "")
                     .Update();
-            } else {
+            }
+            else
+            {
                 await client.From<Customer>().Insert(customer);
             }
-            
+
             ModalOverlay.IsVisible = false;
             await LoadDataAsync();
-            
-        } catch (Exception ex) { 
-            if (ex.Message.Contains("duplicate") || ex.Message.Contains("23505"))
-                ShowDialogError("שגיאה: תעודת הזהות או האימייל כבר קיימים במערכת.");
-            else
-                ShowDialogError("שגיאה: ודא שכל השדות הוזנו כראוי."); 
+
+            // If editing the currently-selected customer, refresh their profile
+            if (_isEditMode && _selectedCustomer?.Id == id)
+            {
+                var updated = _allCustomers.FirstOrDefault(c => c.Id == id);
+                if (updated != null)
+                {
+                    _selectedCustomer = updated;
+                    _ = LoadCustomerProfileAsync(updated);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowDialogError(ex.Message.Contains("duplicate") || ex.Message.Contains("23505")
+                ? "שגיאה: תעודת הזהות או האימייל כבר קיימים במערכת."
+                : "שגיאה בשמירה, ודא שכל השדות הוזנו כראוי.");
         }
     }
-    
+
     private void ShowDialogError(string msg)
     {
-        lblDialogError.Text = "⚠ " + msg;
+        lblDialogError.Text      = "⚠ " + msg;
         lblDialogError.IsVisible = true;
     }
 
-    private void btnAddCustomer_Click(object? sender, RoutedEventArgs e) => OpenDialog();
-    
-    private void btnEdit_Click(object? sender, RoutedEventArgs e) 
-    {
-        if (lstCustomers.SelectedItem is CustomerRow r) OpenDialog(new Customer { Id = r.Id, FullName = r.FullName, Phone = r.Phone, Email = r.Email });
-    }
+    private void btnAddCustomer_Click(object? sender, RoutedEventArgs e)
+        => OpenDialog();
 
-    private async void btnDelete_Click(object? sender, RoutedEventArgs e)
+    // ── Helpers ────────────────────────────────────────────────────────────
+    private static string BuildInitials(string fullName)
     {
-        if (lstCustomers.SelectedItem is not CustomerRow r) return;
-        try {
-            await SupabaseService.Client!.From<Customer>().Where(c => c.Id == r.Id).Delete();
-            await LoadDataAsync();
-        } catch (Exception) { 
-            lblStatus.Text = "⚠ שגיאה: לא ניתן למחוק לקוח שיש לו חיות מחמד במערכת."; 
-            lblStatus.Foreground = Avalonia.Media.SolidColorBrush.Parse("#dc2626");
-        }
-    }
-
-    private void btnViewPets_Click(object? sender, RoutedEventArgs e)
-    {
-        if (lstCustomers.SelectedItem is not CustomerRow r) return;
-        if (this.VisualRoot is MainMenuWindow mainWindow)
-        {
-            mainWindow.GoToPetsForCustomer(r.Id);
-        }
+        var parts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2
+            ? $"{parts[0][0]}{parts[1][0]}"
+            : fullName.Length > 0 ? fullName[0].ToString() : "?";
     }
 }
 
+// ── CustomerRow display model ──────────────────────────────────────────────
 public class CustomerRow
 {
-    public string Id { get; set; }
-    public string FullName { get; set; }
-    public string Phone { get; set; }
-    public string? Email { get; set; }
-    public string CreatedAtFormatted { get; set; }
-    public CustomerRow(Customer c) {
-        Id = c.Id; FullName = c.FullName; Phone = c.Phone; Email = c.Email;
+    public string  Id                 { get; set; }
+    public string  FullName           { get; set; }
+    public string  Phone              { get; set; }
+    public string? Email              { get; set; }
+    public string  CreatedAtFormatted { get; set; }
+    public string  FirstLetter        => FullName.Length > 0 ? FullName[0].ToString() : "?";
+
+    public CustomerRow(Customer c)
+    {
+        Id                 = c.Id;
+        FullName           = c.FullName;
+        Phone              = c.Phone;
+        Email              = c.Email;
         CreatedAtFormatted = c.CreatedAt?.ToString("MMM dd, yyyy") ?? "—";
     }
 }
