@@ -1,22 +1,243 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="ClinicVetsSystem.InventoryView"
-             x:CompileBindings="False">
-    <Grid RowDefinitions="Auto, *, Auto" Margin="20">
-        <TextBlock Grid.Row="0" Text="ניהול מלאי תרופות" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
-        
-        <DataGrid Grid.Row="1" Name="dgInventory" AutoGenerateColumns="False" IsReadOnly="True">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="שם תרופה" Binding="{Binding Name}" Width="*"/>
-                <DataGridTextColumn Header="מחיר" Binding="{Binding Price}" Width="100"/>
-            </DataGrid.Columns>
-        </DataGrid>
+             FontFamily="Inter, sans-serif">
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" Margin="0,20,0,0">
-            <TextBox Name="newName" Watermark="שם תרופה" Width="150"/>
-            <TextBox Name="newPrice" Watermark="מחיר" Width="80"/>
-            <Button Content="הוסף למלאי" Click="AddMedication_Click" Background="#006c49" Foreground="White"/>
-            <Button Content="מחק נבחר" Click="DeleteMedication_Click" Background="#ba1a1a" Foreground="White"/>
-        </StackPanel>
+    <UserControl.Styles>
+
+        <Style Selector="Border.glassCard">
+            <Setter Property="Background" Value="#ffffff"/>
+            <Setter Property="CornerRadius" Value="32"/>
+            <Setter Property="BoxShadow" Value="0 10 30 0 #08005236"/>
+        </Style>
+
+        <Style Selector="Button.primaryAction">
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.primaryAction:pointerover">
+            <Setter Property="RenderTransform" Value="scale(0.97)"/>
+        </Style>
+
+        <Style Selector="TextBox.formInput">
+            <Setter Property="Background" Value="#f2f4f6"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="16,13"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="TextBox.formInput:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#006c49"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+        </Style>
+
+        <Style Selector="Button.iconBtn">
+            <Setter Property="Background" Value="#f1f5f9"/>
+            <Setter Property="Foreground" Value="#475569"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.iconBtn:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#e2e8f0"/>
+        </Style>
+
+    </UserControl.Styles>
+
+    <!-- Root — main layout + overlay -->
+    <Grid>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!--  MAIN LAYOUT                                           -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <Grid RowDefinitions="Auto, Auto, Auto, *"
+              Margin="32,24,32,32" RowSpacing="20">
+
+            <!-- ── Header ──────────────────────────────────────── -->
+            <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
+                <StackPanel Grid.Column="0" Spacing="4" VerticalAlignment="Center">
+                    <TextBlock Text="ניהול מלאי תרופות"
+                               FontSize="32" FontWeight="Black" Foreground="#006c49"/>
+                    <TextBlock Name="lblSubtitle" FontSize="14" Foreground="#64748b"/>
+                </StackPanel>
+
+                <Button Grid.Column="1" Name="btnAddMed"
+                        Classes="primaryAction" Padding="22,14"
+                        Click="BtnAddMed_Click" VerticalAlignment="Center">
+                    <Button.Background>
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                            <GradientStop Color="#006c49" Offset="0"/>
+                            <GradientStop Color="#10b981" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="+" FontSize="20" FontWeight="Black"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="תרופה חדשה" FontSize="13" FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </Grid>
+
+            <!-- ── Stats row ────────────────────────────────────── -->
+            <Grid Grid.Row="1" ColumnDefinitions="*, *, *, *" ColumnSpacing="16">
+
+                <Border Grid.Column="0" Background="#f0fdf4" CornerRadius="24" Padding="24,18">
+                    <StackPanel Spacing="4">
+                        <TextBlock Name="lblStatTotal"
+                                   FontSize="34" FontWeight="Black" Foreground="#006c49"/>
+                        <TextBlock Text="סה&quot;כ תרופות"
+                                   FontSize="12" FontWeight="SemiBold" Foreground="#64748b"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Background="#fef9c3" CornerRadius="24" Padding="24,18">
+                    <StackPanel Spacing="4">
+                        <TextBlock Name="lblStatLow"
+                                   FontSize="34" FontWeight="Black" Foreground="#a16207"/>
+                        <TextBlock Text="מלאי נמוך"
+                                   FontSize="12" FontWeight="SemiBold" Foreground="#64748b"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Background="#fee2e2" CornerRadius="24" Padding="24,18">
+                    <StackPanel Spacing="4">
+                        <TextBlock Name="lblStatOut"
+                                   FontSize="34" FontWeight="Black" Foreground="#dc2626"/>
+                        <TextBlock Text="אזל מהמלאי"
+                                   FontSize="12" FontWeight="SemiBold" Foreground="#64748b"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="3" Background="#f8fafc" CornerRadius="24" Padding="24,18">
+                    <StackPanel Spacing="4">
+                        <TextBlock Name="lblStatValue"
+                                   FontSize="24" FontWeight="Black" Foreground="#1e293b"/>
+                        <TextBlock Text="שווי מלאי משוער"
+                                   FontSize="12" FontWeight="SemiBold" Foreground="#64748b"/>
+                    </StackPanel>
+                </Border>
+
+            </Grid>
+
+            <!-- ── Search ───────────────────────────────────────── -->
+            <Border Grid.Row="2" Classes="glassCard" Padding="6,2">
+                <TextBox Name="txtSearch" Background="Transparent"
+                         BorderThickness="0" Padding="16,12" FontSize="14"
+                         Watermark="🔍  חיפוש תרופה לפי שם..."
+                         TextChanged="TxtSearch_TextChanged"/>
+            </Border>
+
+            <!-- ── Medication list ─────────────────────────────── -->
+            <Border Grid.Row="3" Classes="glassCard" Padding="0" ClipToBounds="True">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Name="MedList" Spacing="0"/>
+                </ScrollViewer>
+            </Border>
+
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <!--  OVERLAY — Add / Edit medication                       -->
+        <!-- ═══════════════════════════════════════════════════════ -->
+        <Grid Name="MedOverlay" IsVisible="False"
+              Background="#BB000000" ZIndex="100">
+
+            <Border Background="#ffffff" CornerRadius="32" Width="480"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    BoxShadow="0 24 64 0 #28005236" Padding="40">
+                <StackPanel Spacing="0">
+
+                    <!-- Dialog header -->
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,6">
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Name="lblMedDialogTitle" Text="תרופה חדשה"
+                                       FontSize="22" FontWeight="Black" Foreground="#006c49"/>
+                            <TextBlock Text="מלא את פרטי התרופה"
+                                       FontSize="13" Foreground="#64748b" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="✕"
+                                Background="Transparent" Foreground="#94a3b8"
+                                CornerRadius="10" Padding="8,4" FontSize="16"
+                                VerticalAlignment="Top" Cursor="Hand"
+                                Click="CloseMedDialog_Click"/>
+                    </Grid>
+
+                    <Border Height="1" Background="#f1f5f9" Margin="0,14,0,22"/>
+
+                    <StackPanel Spacing="14">
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="שם התרופה" FontSize="11" FontWeight="Bold"
+                                       Foreground="#64748b"/>
+                            <TextBox Name="txtMedName" Classes="formInput"
+                                     Watermark="לדוג׳: Amoxicillin"/>
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*, *" ColumnSpacing="14">
+                            <StackPanel Grid.Column="0" Spacing="6">
+                                <TextBlock Text="מחיר ליחידה (₪)" FontSize="11"
+                                           FontWeight="Bold" Foreground="#64748b"/>
+                                <TextBox Name="txtMedPrice" Classes="formInput"
+                                         Watermark="0.00"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="6">
+                                <TextBlock Text="כמות במלאי" FontSize="11"
+                                           FontWeight="Bold" Foreground="#64748b"/>
+                                <TextBox Name="txtMedStock" Classes="formInput"
+                                         Watermark="0"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Name="lblMedError" IsVisible="False"
+                                   Foreground="#dc2626" FontSize="12"
+                                   TextWrapping="Wrap"/>
+
+                        <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12"
+                              Margin="0,8,0,0">
+                            <Button Grid.Column="0" Content="ביטול"
+                                    Click="CloseMedDialog_Click"
+                                    Background="#f1f5f9" Foreground="#64748b"
+                                    CornerRadius="14" Padding="0,13"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    Cursor="Hand"/>
+                            <Button Grid.Column="1" Name="btnSaveMed"
+                                    Classes="primaryAction" Padding="28,13"
+                                    Click="BtnSaveMed_Click">
+                                <Button.Background>
+                                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                        <GradientStop Color="#006c49" Offset="0"/>
+                                        <GradientStop Color="#10b981" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Button.Background>
+                                <TextBlock Name="lblSaveMedBtn" Text="שמור תרופה ✓"
+                                           FontWeight="Bold"/>
+                            </Button>
+                        </Grid>
+
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
     </Grid>
 </UserControl>
