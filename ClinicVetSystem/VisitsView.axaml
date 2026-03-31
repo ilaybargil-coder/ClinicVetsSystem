@@ -1,23 +1,79 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="ClinicVetsSystem.VisitsView">
-    <StackPanel Margin="20" Spacing="15">
-        <TextBlock Text="ניהול ביקור וטיפול" FontSize="20" FontWeight="Bold" Foreground="#006c49"/>
-        
-        <TextBox Name="txtDiagnosis" Watermark="הזן אבחנה רפואית..." Height="100" AcceptsReturn="True"/>
-        
-        <TextBlock Name="lblVaccineWarning" IsVisible="False" Foreground="#ba1a1a" FontWeight="Bold"/>
+             xmlns:models="clr-namespace:ClinicVetsSystem.Models"
+             x:Class="ClinicVetsSystem.VisitsView"
+             FontFamily="Inter, sans-serif">
 
-        <TextBlock Text="בחירת תרופות מהמלאי:" FontWeight="SemiBold"/>
-        <ListBox Name="lstMedications" Height="150" SelectionMode="Multiple"/>
-        
-        <Border Background="#f0fdf4" Padding="10" CornerRadius="5">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock Name="lblTotalPrice" Text="סה''כ לתשלום: ₪ 0" VerticalAlignment="Center" FontWeight="Bold"/>
-                <Button Content="חישוב עלות סופית" Background="#006c49" Foreground="White" Click="CalculateTotal_Click"/>
-            </StackPanel>
-        </Border>
-        
-        <Button Content="שמור סיכום ביקור" HorizontalAlignment="Right" Click="SaveVisit_Click"/>
-    </StackPanel>
+    <Grid>
+        <DockPanel Margin="24">
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="*, Auto" Margin="0,0,0,20">
+                <TextBlock Grid.Column="0" Text="היסטוריית ביקורים" FontSize="28" FontWeight="Black" Foreground="#006c49" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Content="+ רישום ביקור חדש" Background="#006c49" Foreground="White" 
+                        Padding="15,10" CornerRadius="8" FontWeight="Bold" Click="OpenNewVisit_Click"/>
+            </Grid>
+
+            <Border Background="White" CornerRadius="16" BoxShadow="0 4 12 0 #10000000">
+                <DataGrid Name="dgVisits" IsReadOnly="True" GridLinesVisibility="All" Margin="10" x:DataType="models:Visit">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="תאריך" Binding="{Binding VisitDate, StringFormat=\{0:dd/MM/yyyy\}}" />
+                        <DataGridTextColumn Header="וטרינר מטפל" Binding="{Binding VetName}" /> <DataGridTextColumn Header="מזהה חיה" Binding="{Binding PetId}" />
+                        <DataGridTextColumn Header="סיבת הגעה" Binding="{Binding Reason}" Width="*" />
+                        <DataGridTextColumn Header="אבחנה" Binding="{Binding Diagnosis}" Width="*" />
+                        <DataGridTextColumn Header="עלות" Binding="{Binding TotalCost, StringFormat='₪{0}'}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </DockPanel>
+
+        <Grid Name="NewVisitOverlay" Background="#CC000000" IsVisible="False">
+            <Border Background="#f8fafc" CornerRadius="20" MaxWidth="850" VerticalAlignment="Center" Margin="20" Padding="30">
+                <Grid ColumnDefinitions="2*, 1*">
+                    <StackPanel Grid.Column="0" Spacing="15">
+                        <TextBlock Text="רישום ביקור רפואי חדש" FontSize="24" FontWeight="Bold" Foreground="#006c49"/>
+                        
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="וטרינר מטפל:" FontSize="12" Foreground="#64748b"/>
+                            <TextBlock Name="lblVetNameDisplay" FontSize="16" FontWeight="SemiBold" Foreground="#1e293b"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="בחר חיה:" FontSize="12" Foreground="#64748b"/>
+                            <ComboBox Name="cbPets" HorizontalAlignment="Stretch" x:DataType="models:Pet">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:Pet">
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*, *" ColumnSpacing="15">
+                            <TextBox Grid.Column="0" Name="txtReason" Watermark="סיבת הגעה"/>
+                            <DatePicker Grid.Column="1" Name="dpDate" />
+                        </Grid>
+
+                        <TextBox Name="txtDiagnosis" Height="100" AcceptsReturn="True" Watermark="אבחנה רפואית..."/>
+                        <TextBlock Name="lblStatusMessage" FontWeight="Bold" TextAlignment="Center" IsVisible="False"/>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                            <Button Content="ביטול" Click="CloseOverlay_Click" Background="#e2e8f0" Padding="20,10" CornerRadius="8"/>
+                            <Button Content="שמור ביקור" Click="SaveVisit_Click" Background="#006c49" Foreground="White" Padding="20,10" CornerRadius="8"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="20,0,0,0">
+                        <TextBlock Text="תרופות:" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <ListBox Name="lstMedications" Height="300" SelectionMode="Multiple,Toggle" SelectionChanged="LstMedications_SelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:Medication">
+                                    <TextBlock Text="{Binding Name}"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <TextBlock Name="lblTotalPrice" Text="סה''כ: ₪ 150" FontSize="18" FontWeight="Bold" Margin="0,10"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
 </UserControl>
