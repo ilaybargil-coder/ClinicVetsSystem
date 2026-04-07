@@ -233,20 +233,31 @@
                                       PlaceholderText="בחר שעה..."/>
                         </StackPanel>
 
-                        <!-- Customer -->
+                        <!-- Customer (search-as-you-type) -->
                         <StackPanel Spacing="6">
                             <TextBlock Text="לקוח" FontSize="12"
                                        FontWeight="SemiBold" Foreground="#64748b"/>
-                            <ComboBox Name="cbCustomer" Classes="formInput"
-                                      HorizontalAlignment="Stretch"
-                                      PlaceholderText="חפש לקוח קיים..."
-                                      SelectionChanged="CbCustomer_SelectionChanged">
-                                <ComboBox.ItemTemplate>
+                            <TextBox Name="txtCustomerSearch" Classes="formInput"
+                                     HorizontalAlignment="Stretch"
+                                     Watermark="חפש לפי שם, טלפון או ת״ז..."
+                                     TextChanged="TxtCustomerSearch_TextChanged"/>
+                            <ListBox Name="lbCustomerResults"
+                                     MaxHeight="150"
+                                     IsVisible="False"
+                                     Background="#ffffff"
+                                     CornerRadius="0,0,12,12"
+                                     BorderBrush="#e2e8f0"
+                                     BorderThickness="1"
+                                     SelectionChanged="LbCustomerResults_SelectionChanged">
+                                <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="models:Customer">
-                                        <TextBlock Text="{Binding FullName}"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{Binding FullName}" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Phone}" Foreground="#94a3b8" FontSize="12" VerticalAlignment="Center"/>
+                                        </StackPanel>
                                     </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
                         </StackPanel>
 
                         <!-- Pet (enabled only after customer is chosen) -->

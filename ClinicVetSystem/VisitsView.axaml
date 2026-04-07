@@ -89,7 +89,7 @@
                     <StackPanel Spacing="2" HorizontalAlignment="Center">
                         <TextBlock Name="lblVetBadge" FontSize="12" FontWeight="Bold"
                                    Foreground="#006c49" HorizontalAlignment="Center"/>
-                        <TextBlock Text="וטרינר/ית" FontSize="10" Foreground="#64748b"
+                        <TextBlock Name="lblRoleLabel" Text="וטרינר/ית" FontSize="10" Foreground="#64748b"
                                    HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Border>

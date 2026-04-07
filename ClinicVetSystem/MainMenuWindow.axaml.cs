@@ -35,7 +35,7 @@ public partial class MainMenuWindow : Window
         if (_loggedInStaff.Role == "מזכיר/ה")
         {
             btnNavCustomers.IsVisible = true;
-            btnNavVisits.IsVisible = false;
+            btnNavVisits.IsVisible = true;
         }
         else if (_loggedInStaff.Role == "וטרינר/ית")
         {
@@ -44,11 +44,14 @@ public partial class MainMenuWindow : Window
         }
     }
 
-    private void SetActiveTab(string tabName, bool clearFilters = true)
+    private void DeactivateAllTabs()
     {
         btnNavDashboard.Classes.Remove("active");
         btnNavCustomers.Classes.Remove("active");
         btnNavPets.Classes.Remove("active");
+        btnNavVisits.Classes.Remove("active");
+        btnCalender.Classes.Remove("active");
+        btnInventory.Classes.Remove("active");
 
         DashboardPanel.IsVisible = false;
         CustomersPanel.IsVisible = false;
@@ -56,6 +59,13 @@ public partial class MainMenuWindow : Window
 
         var mainContent = this.FindControl<ContentControl>("MainContentRegion");
         if (mainContent != null) mainContent.IsVisible = false;
+
+        _activeNavBtn = null;
+    }
+
+    private void SetActiveTab(string tabName, bool clearFilters = true)
+    {
+        DeactivateAllTabs();
 
         switch (tabName)
         {
@@ -80,16 +90,10 @@ public partial class MainMenuWindow : Window
 
     private void NavigateTo(UserControl view, object sender)
     {
-        btnNavDashboard.Classes.Remove("active");
-        btnNavCustomers.Classes.Remove("active");
-        btnNavPets.Classes.Remove("active");
-        DashboardPanel.IsVisible = false;
-        CustomersPanel.IsVisible = false;
-        PetsPanel.IsVisible = false;
+        DeactivateAllTabs();
 
-        if (_activeNavBtn != null) _activeNavBtn.Classes.Set("active", false);
         _activeNavBtn = sender as Button;
-        _activeNavBtn?.Classes.Set("active", true);
+        _activeNavBtn?.Classes.Add("active");
 
         var mainContent = this.FindControl<ContentControl>("MainContentRegion");
         if (mainContent != null)
@@ -114,9 +118,13 @@ public partial class MainMenuWindow : Window
     private void btnInventory_Click(object? sender, RoutedEventArgs e) => NavigateTo(new InventoryView(), sender!);
 
     private void btnVisits_Click(object? sender, RoutedEventArgs e)
+        => NavigateTo(new VisitsView(_loggedInStaff), sender!);
+
+    public void GoToCalendarForCustomer(string customerId)
     {
-        if (_loggedInStaff.Role == "וטרינר/ית")
-            NavigateTo(new VisitsView(_loggedInStaff), sender!);
+        var calView = new CalendarView();
+        NavigateTo(calView, btnCalender);
+        calView.PreSelectCustomer(customerId);
     }
 
     public void GoToPetsForCustomer(string customerId)

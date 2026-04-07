@@ -21,7 +21,7 @@ public partial class CustomersView : UserControl
     private CustomerRow?                        _selectedCustomer;
     private bool                                _isEditMode       = false;
 
-    // Avatar colours — one per customer (hashed from name)
+    // Avatar colours
     private static readonly string[] AvatarBg  = { "#f0fdf4", "#eff6ff", "#fdf4ff", "#fffbeb", "#fef2f2" };
     private static readonly string[] AvatarFg  = { "#006c49", "#1d4ed8", "#7c3aed", "#a16207", "#dc2626" };
 
@@ -97,24 +97,20 @@ public partial class CustomersView : UserControl
     // ── Profile panel ──────────────────────────────────────────────────────
     private async Task LoadCustomerProfileAsync(CustomerRow row)
     {
-        // Switch panels
         EmptyStatePanel.IsVisible = false;
         ProfilePanel.IsVisible    = true;
 
-        // Avatar
         int colorIdx = Math.Abs(row.FullName.GetHashCode()) % AvatarBg.Length;
         AvatarBorder.Background    = new SolidColorBrush(Color.Parse(AvatarBg[colorIdx]));
         lblInitials.Foreground     = new SolidColorBrush(Color.Parse(AvatarFg[colorIdx]));
         lblInitials.Text           = BuildInitials(row.FullName);
 
-        // Details
         lblProfileName.Text  = row.FullName;
         lblProfileId.Text    = row.Id;
         lblProfilePhone.Text = row.Phone;
         lblProfileEmail.Text = string.IsNullOrEmpty(row.Email) ? "—" : row.Email;
         lblProfileSince.Text = $"לקוח מאז {row.CreatedAtFormatted}";
 
-        // Load pets for this customer
         await LoadCustomerPetsAsync(row.Id);
     }
 
@@ -181,13 +177,11 @@ public partial class CustomersView : UserControl
         var fgColor = Color.Parse(fg);
         var muteFg  = Color.FromArgb(160, fgColor.R, fgColor.G, fgColor.B);
 
-        // Vaccine badge
         bool vaccineOk = !pet.NeedsVaccine;
         var vaccineBg  = vaccineOk ? Color.Parse("#dcfce7") : Color.Parse("#fef9c3");
         var vaccineFg  = vaccineOk ? Color.Parse("#15803d") : Color.Parse("#a16207");
         var vaccineText = vaccineOk ? "✓ חיסון תקין" : "⚠ חיסון פג";
 
-        // Left: emoji circle
         var emojiCircle = new Border
         {
             Width = 48, Height = 48,
@@ -201,7 +195,6 @@ public partial class CustomersView : UserControl
             }
         };
 
-        // Right: details
         var nameRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
         nameRow.Children.Add(new TextBlock
         {
@@ -275,7 +268,6 @@ public partial class CustomersView : UserControl
                 .Where(c => c.Id == _selectedCustomer.Id)
                 .Delete();
 
-            // Reset profile panel
             _selectedCustomer = null;
             ProfilePanel.IsVisible    = false;
             EmptyStatePanel.IsVisible = true;
@@ -450,7 +442,6 @@ public partial class CustomersView : UserControl
             ModalOverlay.IsVisible = false;
             await LoadDataAsync();
 
-            // If editing the currently-selected customer, refresh their profile
             if (_isEditMode && _selectedCustomer?.Id == id)
             {
                 var updated = _allCustomers.FirstOrDefault(c => c.Id == id);
@@ -477,6 +468,116 @@ public partial class CustomersView : UserControl
 
     private void btnAddCustomer_Click(object? sender, RoutedEventArgs e)
         => OpenDialog();
+
+    // ── Appointment Management ─────────────────────────────────────────────
+    private List<Pet> _customerPetsCache = new();
+
+    private async void btnManageAppointments_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedCustomer == null) return;
+
+        lblApptStatus.IsVisible        = false;
+        lblApptCustomerName.Text       = $"לקוח: {_selectedCustomer.FullName}";
+        AppointmentManagerModal.IsVisible = true;
+        await RefreshAppointmentLists();
+    }
+
+    private async Task RefreshAppointmentLists()
+    {
+        if (_selectedCustomer == null) return;
+        var client = SupabaseService.Client;
+        if (client == null) return;
+
+        try
+        {
+            var petsResponse = await client.From<Pet>()
+                .Where(p => p.OwnerId == _selectedCustomer.Id)
+                .Get();
+            _customerPetsCache = petsResponse.Models;
+            var petIds = _customerPetsCache.Select(p => p.Id).ToHashSet();
+
+            if (petIds.Count == 0)
+            {
+                lstUpcoming.ItemsSource = null;
+                lstHistory.ItemsSource  = null;
+                return;
+            }
+
+            var visitsResponse = await client.From<Visit>().Get();
+            var allVisits = visitsResponse.Models
+                .Where(v => petIds.Contains(v.PetId))
+                .ToList();
+
+            var now = DateTime.Now;
+
+            lstUpcoming.ItemsSource = allVisits
+                .Where(v => v.VisitDate >= now)
+                .OrderBy(v => v.VisitDate)
+                .Select(v =>
+                {
+                    var pet = _customerPetsCache.FirstOrDefault(p => p.Id == v.PetId);
+                    return new AppointmentDisplayRow
+                    {
+                        Id = v.Id,
+                        DisplayDate = v.VisitDate.ToString("dd/MM/yyyy HH:mm"),
+                        PetName = pet?.Name ?? "",
+                        Reason = v.Reason
+                    };
+                })
+                .ToList();
+
+            lstHistory.ItemsSource = allVisits
+                .Where(v => v.VisitDate < now)
+                .OrderByDescending(v => v.VisitDate)
+                .Select(v =>
+                {
+                    var pet = _customerPetsCache.FirstOrDefault(p => p.Id == v.PetId);
+                    return new AppointmentDisplayRow
+                    {
+                        Id = v.Id,
+                        DisplayDate = v.VisitDate.ToString("dd/MM/yyyy HH:mm"),
+                        PetName = pet?.Name ?? "",
+                        Reason = v.Reason
+                    };
+                })
+                .ToList();
+        }
+        catch (Exception) { }
+    }
+
+    private async void btnCancelAppointment_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is int visitId)
+        {
+            btn.IsEnabled = false;
+            try
+            {
+                await SupabaseService.Client!.From<Visit>().Where(v => v.Id == visitId).Delete();
+                lblApptStatus.Text       = "✓ התור בוטל בהצלחה";
+                lblApptStatus.Foreground = new SolidColorBrush(Color.Parse("#15803d"));
+                lblApptStatus.IsVisible  = true;
+                await RefreshAppointmentLists();
+            }
+            catch (Exception)
+            {
+                lblApptStatus.Text       = "⚠ שגיאה בביטול התור";
+                lblApptStatus.Foreground = new SolidColorBrush(Color.Parse("#dc2626"));
+                lblApptStatus.IsVisible  = true;
+            }
+            finally { btn.IsEnabled = true; }
+        }
+    }
+
+    private void btnGoToNewAppointment_Click(object? sender, RoutedEventArgs e)
+    {
+        AppointmentManagerModal.IsVisible = false;
+        var mainWindow = this.VisualRoot as MainMenuWindow;
+        if (mainWindow != null && _selectedCustomer != null)
+            mainWindow.GoToCalendarForCustomer(_selectedCustomer.Id);
+    }
+
+    private void btnCloseAppointments_Click(object? sender, RoutedEventArgs e)
+        => AppointmentManagerModal.IsVisible = false;
 
     // ── Helpers ────────────────────────────────────────────────────────────
     private static string BuildInitials(string fullName)
@@ -506,4 +607,13 @@ public class CustomerRow
         Email              = c.Email;
         CreatedAtFormatted = c.CreatedAt?.ToString("MMM dd, yyyy") ?? "—";
     }
+}
+
+// ── Appointment display model ─────────────────────────────────────────────
+public class AppointmentDisplayRow
+{
+    public int    Id          { get; set; }
+    public string DisplayDate { get; set; } = "";
+    public string PetName     { get; set; } = "";
+    public string Reason      { get; set; } = "";
 }

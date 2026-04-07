@@ -23,6 +23,9 @@ public partial class CalendarView : UserControl
     private List<Pet>      _allPets      = new();
     private List<Staff>    _allVets      = new();
 
+    private Customer? _selectedCustomer;
+    private bool _suppressCustomerSearch;
+
     /// <summary>Set to true before navigating here to auto-open the New Appointment dialog once data loads.</summary>
     public bool OpenDialogAfterLoad { get; set; }
 
@@ -113,8 +116,7 @@ public partial class CalendarView : UserControl
             }).ToList();
 
             // Populate combos in the dialog
-            cbCustomer.ItemsSource = _allCustomers;
-            cbVet.ItemsSource      = _allVets;
+            cbVet.ItemsSource = _allVets;
 
             RenderView();
 
@@ -455,7 +457,12 @@ public partial class CalendarView : UserControl
     /// <summary>Opens the New Appointment dialog and resets all fields.</summary>
     public void OpenNewAppointmentDialog()
     {
-        cbCustomer.SelectedIndex       = -1;
+        _selectedCustomer              = null;
+        _suppressCustomerSearch        = true;
+        txtCustomerSearch.Text         = "";
+        _suppressCustomerSearch        = false;
+        lbCustomerResults.ItemsSource  = null;
+        lbCustomerResults.IsVisible    = false;
         cbPet.SelectedIndex            = -1;
         cbPet.IsEnabled                = false;
         cbPet.PlaceholderText          = "בחר קודם לקוח...";
@@ -469,32 +476,57 @@ public partial class CalendarView : UserControl
     private void CloseDialog_Click(object? sender, RoutedEventArgs e)
         => NewAppointmentOverlay.IsVisible = false;
 
-    // ── Dialog: customer → filter pets ────────────────────────────────────
-    private void CbCustomer_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    // ── Dialog: customer search-as-you-type ──────────────────────────────
+    private void TxtCustomerSearch_TextChanged(object? sender, TextChangedEventArgs e)
     {
-        if (cbCustomer.SelectedItem is Customer selected)
+        if (_suppressCustomerSearch) return;
+
+        var query = txtCustomerSearch.Text?.Trim() ?? "";
+        if (query.Length == 0)
         {
-            var customerPets = _allPets.Where(p => p.OwnerId == selected.Id).ToList();
-            cbPet.ItemsSource    = customerPets;
-            cbPet.IsEnabled      = customerPets.Count > 0;
-            cbPet.PlaceholderText = customerPets.Count > 0
-                ? "בחר חיה..."
-                : "ללקוח זה אין חיות רשומות";
-            cbPet.SelectedIndex  = -1;
-        }
-        else
-        {
+            lbCustomerResults.ItemsSource = null;
+            lbCustomerResults.IsVisible   = false;
+            _selectedCustomer = null;
             cbPet.ItemsSource    = null;
             cbPet.IsEnabled      = false;
             cbPet.PlaceholderText = "בחר קודם לקוח...";
+            return;
         }
+
+        var filtered = _allCustomers
+            .Where(c => c.FullName.Contains(query, StringComparison.OrdinalIgnoreCase)
+                     || c.Phone.Contains(query, StringComparison.OrdinalIgnoreCase)
+                     || c.Id.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        lbCustomerResults.ItemsSource = filtered;
+        lbCustomerResults.IsVisible   = filtered.Count > 0;
+    }
+
+    private void LbCustomerResults_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (lbCustomerResults.SelectedItem is not Customer selected) return;
+
+        _selectedCustomer       = selected;
+        _suppressCustomerSearch = true;
+        txtCustomerSearch.Text  = $"{selected.FullName} — {selected.Phone}";
+        _suppressCustomerSearch = false;
+        lbCustomerResults.IsVisible = false;
+
+        var customerPets = _allPets.Where(p => p.OwnerId == selected.Id).ToList();
+        cbPet.ItemsSource    = customerPets;
+        cbPet.IsEnabled      = customerPets.Count > 0;
+        cbPet.PlaceholderText = customerPets.Count > 0
+            ? "בחר חיה..."
+            : "ללקוח זה אין חיות רשומות";
+        cbPet.SelectedIndex  = -1;
     }
 
     // ── Dialog: save ──────────────────────────────────────────────────────
     private async void BtnSaveAppointment_Click(object? sender, RoutedEventArgs e)
     {
         // Validate all required fields
-        if (cbCustomer.SelectedItem is not Customer ||
+        if (_selectedCustomer is null ||
             cbPet.SelectedItem      is not Pet selectedPet ||
             cbVet.SelectedItem      is not Staff selectedVet ||
             cbTime.SelectedItem     is null ||
@@ -511,13 +543,22 @@ public partial class CalendarView : UserControl
         var parts  = cbTime.SelectedItem!.ToString()!.Split(':');
         var apptDt = date.AddHours(int.Parse(parts[0])).AddMinutes(int.Parse(parts[1]));
 
-        // ── Conflict check: no two appointments within 10 minutes ──
+        // ── Block past appointments ──
+        if (apptDt < DateTime.Now)
+        {
+            lblDialogStatus.Text      = "⚠ לא ניתן לקבוע פגישה בזמן שעבר";
+            lblDialogStatus.Foreground = new SolidColorBrush(Color.Parse("#ba1a1a"));
+            lblDialogStatus.IsVisible  = true;
+            return;
+        }
+
+        // ── Conflict check: no two appointments within 30 minutes ──
         bool hasConflict = _appointments.Any(
-            a => Math.Abs((a.DateTime - apptDt).TotalMinutes) < 10);
+            a => Math.Abs((a.DateTime - apptDt).TotalMinutes) < 30);
 
         if (hasConflict)
         {
-            lblDialogStatus.Text      = "⚠ קיים תור באותה שעה. יש לבחור שעה עם פער של לפחות 10 דקות";
+            lblDialogStatus.Text      = "⚠ קיים תור באותה שעה. יש לבחור שעה עם פער של לפחות 30 דקות";
             lblDialogStatus.Foreground = new SolidColorBrush(Color.Parse("#ba1a1a"));
             lblDialogStatus.IsVisible  = true;
             return;
@@ -561,6 +602,26 @@ public partial class CalendarView : UserControl
         {
             btnSaveAppointment.IsEnabled = true;
         }
+    }
+    // ── Routing receiver: pre-select customer from another module ────────
+    public void PreSelectCustomer(string customerId)
+    {
+        var customer = _allCustomers.FirstOrDefault(c => c.Id == customerId);
+        if (customer == null) return;
+
+        _selectedCustomer       = customer;
+        _suppressCustomerSearch = true;
+        txtCustomerSearch.Text  = $"{customer.FullName} — {customer.Phone}";
+        _suppressCustomerSearch = false;
+        lbCustomerResults.IsVisible = false;
+
+        var customerPets = _allPets.Where(p => p.OwnerId == customer.Id).ToList();
+        cbPet.ItemsSource    = customerPets;
+        cbPet.IsEnabled      = customerPets.Count > 0;
+        cbPet.PlaceholderText = customerPets.Count > 0
+            ? "בחר חיה..."
+            : "ללקוח זה אין חיות רשומות";
+        cbPet.SelectedIndex  = -1;
     }
 }
 

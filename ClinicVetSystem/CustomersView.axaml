@@ -67,7 +67,6 @@
             <Setter Property="Background" Value="#e2e8f0"/>
         </Style>
 
-        <!-- List item hover / selected styles -->
         <Style Selector="ListBoxItem">
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -81,20 +80,12 @@
 
     </UserControl.Styles>
 
-    <!-- ════════════════════════════════════════════════════════ -->
-    <!--  ROOT — everything stacks here; overlays sit on top    -->
-    <!-- ════════════════════════════════════════════════════════ -->
     <Grid>
 
-        <!-- ── 2-column main layout ─────────────────────────── -->
         <Grid ColumnDefinitions="380, *" Margin="32,24,32,32" ColumnSpacing="24">
 
-            <!-- ══════════════════════════════════════ -->
-            <!--  LEFT COLUMN — customer list          -->
-            <!-- ══════════════════════════════════════ -->
             <Grid Grid.Column="0" RowDefinitions="Auto, Auto, *, Auto" RowSpacing="14">
 
-                <!-- Header: title + add button -->
                 <Grid Grid.Row="0" ColumnDefinitions="*, Auto">
                     <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2">
                         <TextBlock Text="ניהול לקוחות"
@@ -121,7 +112,6 @@
                     </Button>
                 </Grid>
 
-                <!-- Search box -->
                 <Border Grid.Row="1" Classes="glassCard" Padding="4,2">
                     <TextBox Name="txtSearch" Background="Transparent" BorderThickness="0"
                              Padding="14,12" FontSize="14"
@@ -129,7 +119,6 @@
                              TextChanged="txtSearch_TextChanged"/>
                 </Border>
 
-                <!-- Customer list -->
                 <Border Grid.Row="2" Classes="glassCard" Padding="0" ClipToBounds="True">
                     <ListBox Name="lstCustomers" Background="Transparent" BorderThickness="0"
                              SelectionChanged="lstCustomers_SelectionChanged">
@@ -137,7 +126,6 @@
                             <DataTemplate x:DataType="local:CustomerRow">
                                 <Grid ColumnDefinitions="Auto, *"
                                       Margin="16,10,16,10" ColumnSpacing="14">
-                                    <!-- Initials avatar -->
                                     <Border Grid.Column="0"
                                             Width="44" Height="44" CornerRadius="14"
                                             Background="#f0fdf4">
@@ -147,7 +135,6 @@
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"/>
                                     </Border>
-                                    <!-- Name + phone -->
                                     <StackPanel Grid.Column="1" Spacing="2"
                                                 VerticalAlignment="Center">
                                         <TextBlock Text="{Binding FullName}"
@@ -162,19 +149,14 @@
                     </ListBox>
                 </Border>
 
-                <!-- Sync status -->
                 <TextBlock Grid.Row="3" Name="lblStatus"
                            FontSize="11" Foreground="#94a3b8"
                            HorizontalAlignment="Right"/>
             </Grid>
 
-            <!-- ══════════════════════════════════════ -->
-            <!--  RIGHT COLUMN — profile panel         -->
-            <!-- ══════════════════════════════════════ -->
             <Border Grid.Column="1" Classes="glassCard" Padding="0" ClipToBounds="True">
                 <Grid>
 
-                    <!-- Empty state (default) -->
                     <StackPanel Name="EmptyStatePanel"
                                 VerticalAlignment="Center" HorizontalAlignment="Center"
                                 Spacing="16">
@@ -189,13 +171,11 @@
                                    HorizontalAlignment="Center"/>
                     </StackPanel>
 
-                    <!-- Profile content (hidden until customer selected) -->
                     <ScrollViewer Name="ProfilePanel" IsVisible="False"
                                   HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="36,32,36,36" Spacing="24">
 
-                            <!-- Avatar + name header -->
                             <StackPanel Orientation="Horizontal" Spacing="20">
                                 <Border Name="AvatarBorder" Width="80" Height="80"
                                         CornerRadius="24" Background="#f0fdf4">
@@ -221,7 +201,6 @@
                                 </StackPanel>
                             </StackPanel>
 
-                            <!-- Contact info -->
                             <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
                                 <Border Grid.Column="0" Background="#f8fafc"
                                         CornerRadius="20" Padding="20,16">
@@ -247,7 +226,6 @@
                                 </Border>
                             </Grid>
 
-                            <!-- ── Pets section ─────────────────── -->
                             <StackPanel Spacing="14">
                                 <Grid ColumnDefinitions="*, Auto">
                                     <StackPanel Grid.Column="0" Spacing="2">
@@ -278,19 +256,22 @@
                                     </Button>
                                 </Grid>
 
-                                <!-- Pet cards — populated from code-behind -->
                                 <StackPanel Name="PetsList" Spacing="10"/>
                             </StackPanel>
 
-                            <!-- Divider -->
                             <Border Height="1" Background="#f1f5f9"/>
 
-                            <!-- Edit / Delete actions -->
-                            <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
-                                <Button Grid.Column="0" Content="✏  עריכת פרטי לקוח"
+                            <Grid ColumnDefinitions="*, *, *" ColumnSpacing="12">
+                                <Button Grid.Column="0" Content="✏  עריכה"
                                         Classes="secondaryBtn"
                                         Click="BtnEditProfile_Click"/>
-                                <Button Grid.Column="1" Content="🗑  מחיקת לקוח"
+                                
+                                <Button Grid.Column="1" Content="📅  תורים"
+                                        Classes="secondaryBtn"
+                                        Background="#e0e7ff" Foreground="#4f46e5"
+                                        Click="btnManageAppointments_Click"/>
+                                        
+                                <Button Grid.Column="2" Content="🗑  מחיקה"
                                         Classes="dangerBtn"
                                         Click="BtnDeleteProfile_Click"/>
                             </Grid>
@@ -303,9 +284,6 @@
 
         </Grid>
 
-        <!-- ════════════════════════════════════════════════════════ -->
-        <!--  OVERLAY — Add / Edit customer dialog                  -->
-        <!-- ════════════════════════════════════════════════════════ -->
         <Grid Name="ModalOverlay" IsVisible="False" Background="#80000000" ZIndex="100">
             <Button Background="Transparent"
                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
@@ -369,16 +347,12 @@
             </Border>
         </Grid>
 
-        <!-- ════════════════════════════════════════════════════════ -->
-        <!--  OVERLAY — Add pet to selected customer                -->
-        <!-- ════════════════════════════════════════════════════════ -->
         <Grid Name="AddPetOverlay" IsVisible="False" Background="#BB000000" ZIndex="100">
             <Border Classes="glassCard" Width="540"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
                     Padding="40">
                 <StackPanel Spacing="0">
 
-                    <!-- Header -->
                     <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,6">
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="הוסף חיה ללקוח"
@@ -397,7 +371,6 @@
 
                     <StackPanel Spacing="14">
 
-                        <!-- Name + Type -->
                         <Grid ColumnDefinitions="*, *" ColumnSpacing="14">
                             <StackPanel Grid.Column="0" Spacing="6">
                                 <TextBlock Text="שם החיה" FontSize="11" FontWeight="Bold"
@@ -414,7 +387,6 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Weight + Chip -->
                         <Grid ColumnDefinitions="*, *" ColumnSpacing="14">
                             <StackPanel Grid.Column="0" Spacing="6">
                                 <TextBlock Text="משקל (ק&quot;ג)" FontSize="11" FontWeight="Bold"
@@ -430,7 +402,6 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Birth date + Vaccine date -->
                         <Grid ColumnDefinitions="*, *" ColumnSpacing="14">
                             <StackPanel Grid.Column="0" Spacing="6">
                                 <TextBlock Text="תאריך לידה" FontSize="11" FontWeight="Bold"
@@ -444,12 +415,10 @@
                             </StackPanel>
                         </Grid>
 
-                        <!-- Error -->
                         <TextBlock Name="lblAddPetError" IsVisible="False"
                                    Foreground="#dc2626" FontSize="12"
                                    TextWrapping="Wrap"/>
 
-                        <!-- Actions -->
                         <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12" Margin="0,8,0,0">
                             <Button Grid.Column="0" Content="ביטול"
                                     Click="CloseAddPet_Click"
@@ -472,6 +441,124 @@
                         </Grid>
 
                     </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Grid Name="AppointmentManagerModal" IsVisible="False" Background="#BB000000" ZIndex="100">
+            <Border Classes="glassCard" Width="580"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Padding="40" MaxHeight="700">
+                <StackPanel Spacing="0">
+
+                    <!-- Header -->
+                    <Grid ColumnDefinitions="*, Auto" Margin="0,0,0,6">
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="ניהול תורים וביקורים"
+                                       FontSize="22" FontWeight="Black" Foreground="#006c49"/>
+                            <TextBlock Name="lblApptCustomerName"
+                                       FontSize="13" Foreground="#64748b" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="✕"
+                                Background="Transparent" Foreground="#94a3b8"
+                                CornerRadius="10" Padding="8,4" FontSize="16"
+                                VerticalAlignment="Top" Cursor="Hand"
+                                Click="btnCloseAppointments_Click"/>
+                    </Grid>
+
+                    <Border Height="1" Background="#f1f5f9" Margin="0,14,0,20"/>
+
+                    <ScrollViewer MaxHeight="480" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Spacing="14">
+
+                            <!-- Upcoming appointments -->
+                            <TextBlock Text="📅 תורים עתידיים" FontSize="14"
+                                       FontWeight="Bold" Foreground="#1e293b"/>
+                            <Border Background="#f8fafc" CornerRadius="12" Padding="8" MinHeight="60">
+                                <ListBox Name="lstUpcoming" Background="Transparent"
+                                         BorderThickness="0" MaxHeight="180">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="local:AppointmentDisplayRow">
+                                            <Grid ColumnDefinitions="*, Auto" Margin="4,6">
+                                                <StackPanel Grid.Column="0"
+                                                            VerticalAlignment="Center" Spacing="2">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <TextBlock Text="{Binding DisplayDate}"
+                                                                   FontSize="14" FontWeight="Bold"
+                                                                   Foreground="#006c49"/>
+                                                        <TextBlock Text="{Binding PetName}"
+                                                                   FontSize="12" Foreground="#64748b"
+                                                                   VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Reason}"
+                                                               FontSize="12" Foreground="#94a3b8"/>
+                                                </StackPanel>
+                                                <Button Grid.Column="1" Content="❌ ביטול"
+                                                        Click="btnCancelAppointment_Click"
+                                                        Tag="{Binding Id}"
+                                                        Classes="dangerBtn"
+                                                        Padding="12,6" FontSize="12"
+                                                        VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+
+                            <!-- Visit history -->
+                            <TextBlock Text="🕒 היסטוריית ביקורים" FontSize="14"
+                                       FontWeight="Bold" Foreground="#1e293b" Margin="0,10,0,0"/>
+                            <Border Background="#f8fafc" CornerRadius="12" Padding="8" MinHeight="60">
+                                <ListBox Name="lstHistory" Background="Transparent"
+                                         BorderThickness="0" MaxHeight="180">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate x:DataType="local:AppointmentDisplayRow">
+                                            <StackPanel Margin="4,4" Spacing="2">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{Binding DisplayDate}"
+                                                               FontSize="13" FontWeight="SemiBold"
+                                                               Foreground="#1e293b"/>
+                                                    <TextBlock Text="{Binding PetName}"
+                                                               FontSize="12" Foreground="#64748b"
+                                                               VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <TextBlock Text="{Binding Reason}"
+                                                           FontSize="12" Foreground="#94a3b8"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Border>
+
+                            <!-- Status label -->
+                            <TextBlock Name="lblApptStatus" IsVisible="False"
+                                       FontSize="13" FontWeight="SemiBold"
+                                       TextAlignment="Center" Margin="0,4,0,0"/>
+
+                            <!-- Actions -->
+                            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12" Margin="0,10,0,0">
+                                <Button Grid.Column="0" Content="סגור"
+                                        Click="btnCloseAppointments_Click"
+                                        Background="#f1f5f9" Foreground="#64748b"
+                                        CornerRadius="14" Padding="0,13"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Cursor="Hand"/>
+                                <Button Grid.Column="1"
+                                        Content="➕ תור חדש"
+                                        Classes="primaryAction" Padding="28,13"
+                                        Click="btnGoToNewAppointment_Click">
+                                    <Button.Background>
+                                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                            <GradientStop Color="#006c49" Offset="0"/>
+                                            <GradientStop Color="#10b981" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Button.Background>
+                                </Button>
+                            </Grid>
+
+                        </StackPanel>
+                    </ScrollViewer>
                 </StackPanel>
             </Border>
         </Grid>

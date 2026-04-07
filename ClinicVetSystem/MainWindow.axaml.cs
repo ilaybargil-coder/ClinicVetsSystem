@@ -8,6 +8,8 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -75,6 +77,8 @@ public partial class MainWindow : Window
 
         btnLoginSubmit.IsEnabled = false;
         lblLoginMessage.IsVisible = false;
+
+        password = ComputeSha256Hash(password);
 
         try
         {
@@ -160,13 +164,15 @@ public partial class MainWindow : Window
                 return;
             }
 
+            password = ComputeSha256Hash(password);
+
             // הנה התיקון הקריטי! יצירת אובייקט נקי לחלוטין בלי זכר למילה Id
-            _pendingRegisterStaff = new Staff 
-            { 
-                Username = username, 
-                Password = password, 
-                Email = email, 
-                Role = role 
+            _pendingRegisterStaff = new Staff
+            {
+                Username = username,
+                Password = password,
+                Email = email,
+                Role = role
             };
             
             _otpMode = "Register";
@@ -311,11 +317,21 @@ public partial class MainWindow : Window
 
         try
         {
+            newPass = ComputeSha256Hash(newPass);
             var client = SupabaseService.Client;
             await client!.From<Staff>().Where(s => s.Email == _otpTargetEmail).Set(s => s.Password!, newPass).Update();
             ModalOverlay.IsVisible = false;
         }
         catch (Exception) { lblNewPasswordError.Text = "⚠ Error updating password."; lblNewPasswordError.IsVisible = true; }
+    }
+
+    private string ComputeSha256Hash(string rawData)
+    {
+        byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes(rawData));
+        var builder = new StringBuilder();
+        foreach (var b in bytes)
+            builder.Append(b.ToString("x2"));
+        return builder.ToString();
     }
 
     private bool ValidateRegex(string input, string pattern) => Regex.IsMatch(input, pattern);

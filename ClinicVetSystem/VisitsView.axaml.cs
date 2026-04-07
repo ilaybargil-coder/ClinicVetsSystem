@@ -16,6 +16,7 @@ public partial class VisitsView : UserControl
 {
     // ── State ──────────────────────────────────────────────────────────────
     private readonly Staff          _loggedInStaff;
+    private readonly bool           _isSecretary;
     private const    decimal        BaseCost = 150m;
 
     private List<VisitDisplayItem>  _todayVisits   = new();
@@ -33,7 +34,9 @@ public partial class VisitsView : UserControl
     {
         InitializeComponent();
         _loggedInStaff  = staff;
+        _isSecretary    = staff.Role == "מזכיר/ה";
         lblVetBadge.Text = staff.Username;
+        lblRoleLabel.Text = _isSecretary ? "מזכיר/ה" : "וטרינר/ית";
 
         _ = LoadDataAsync();
     }
@@ -45,10 +48,14 @@ public partial class VisitsView : UserControl
         {
             lblSubtitle.Text = "טוען נתונים...";
 
-            var visitsTask    = SupabaseService.Client!.From<Visit>()
-                                    .Where(v => v.VetId == _loggedInStaff.Id)
-                                    .Order(v => v.VisitDate, Postgrest.Constants.Ordering.Descending)
-                                    .Get();
+            var visitsTask = _isSecretary
+                ? SupabaseService.Client!.From<Visit>()
+                      .Order(v => v.VisitDate, Postgrest.Constants.Ordering.Descending)
+                      .Get()
+                : SupabaseService.Client!.From<Visit>()
+                      .Where(v => v.VetId == _loggedInStaff.Id)
+                      .Order(v => v.VisitDate, Postgrest.Constants.Ordering.Descending)
+                      .Get();
             var petsTask      = SupabaseService.Client!.From<Pet>().Get();
             var customersTask = SupabaseService.Client!.From<Customer>().Get();
             var medsTask      = SupabaseService.Client!.From<Medication>()
@@ -189,13 +196,14 @@ public partial class VisitsView : UserControl
         Grid.SetColumn(badge, 1);
         topRow.Children.Add(badge);
 
-        // Bottom row: customer + time
+        // Bottom row: customer + time + cost (for history)
         var timeStr = item.VisitDate.Date == DateTime.Today
             ? item.VisitDate.ToString("HH:mm")
             : item.VisitDate.ToString("dd/MM/yy");
+        var costStr = item.TotalCost > 0 ? $"  ·  ₪{item.TotalCost}" : "";
         var subText = new TextBlock
         {
-            Text = $"👤 {item.CustomerName}  ·  🕐 {timeStr}",
+            Text = $"👤 {item.CustomerName}  ·  🕐 {timeStr}{costStr}",
             FontSize = 12,
             Foreground = new SolidColorBrush(Color.Parse("#64748b"))
         };
@@ -287,6 +295,14 @@ public partial class VisitsView : UserControl
         // Step 3 – load existing medication selections from DB, then render
         lblSaveStatus.IsVisible = false;
         _ = LoadExistingMedsAndRender(item.VisitId);
+
+        // Apply role restrictions for secretary
+        if (_isSecretary)
+        {
+            txtReason.IsReadOnly      = true;
+            txtDiagnosis.IsReadOnly   = true;
+            btnSaveRecord.IsVisible   = false;
+        }
 
         // Re-render list to highlight selected card
         RenderPatientList();
@@ -383,17 +399,20 @@ public partial class VisitsView : UserControl
             Child        = row
         };
 
-        var medId = med.Id;
-        card.PointerPressed += (_, _) =>
+        if (!_isSecretary)
         {
-            if (_selectedMedIds.Contains(medId))
-                _selectedMedIds.Remove(medId);
-            else
-                _selectedMedIds.Add(medId);
+            var medId = med.Id;
+            card.PointerPressed += (_, _) =>
+            {
+                if (_selectedMedIds.Contains(medId))
+                    _selectedMedIds.Remove(medId);
+                else
+                    _selectedMedIds.Add(medId);
 
-            RenderMedicationsPanel();
-            UpdateCostDisplay();
-        };
+                RenderMedicationsPanel();
+                UpdateCostDisplay();
+            };
+        }
 
         return card;
     }
