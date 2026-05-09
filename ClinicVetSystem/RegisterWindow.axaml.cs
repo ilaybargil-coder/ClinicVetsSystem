@@ -67,16 +67,16 @@ public partial class RegisterWindow : Window
 
         int letterCount  = password.Count(char.IsLetter);
         int digitCount   = password.Count(char.IsDigit);
-        int specialCount = password.Count(c => "$#!.".Contains(c));
+        int specialCount = password.Count(c => "$#!".Contains(c));
 
         if (letterCount < 1)
             return (false, "סיסמה חייבת להכיל לפחות אות אחת.");
 
-        if (digitCount != 1)
-            return (false, "סיסמה חייבת להכיל בדיוק ספרה אחת.");
+        if (digitCount < 1)
+            return (false, "סיסמה חייבת להכיל לפחות ספרה אחת.");
 
-        if (specialCount != 1)
-            return (false, "סיסמה חייבת להכיל בדיוק תו מיוחד אחד ($, #, !, .).");
+        if (specialCount < 1)
+            return (false, "סיסמה חייבת להכיל לפחות תו מיוחד אחד ($, #, !).");
 
         int validChars = letterCount + digitCount + specialCount;
         if (validChars != password.Length)
