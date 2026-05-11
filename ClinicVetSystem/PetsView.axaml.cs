@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using ClinicVetsSystem.Models;
 
 namespace ClinicVetsSystem;
@@ -387,12 +389,21 @@ public class PetRow
 
     public string PetTypeDisplay => PetType switch
     {
-        "כלב"   => "🐶 כלב",
-        "חתול"  => "🐱 חתול",
-        "זוחל"  => "🦎 זוחל",
-        "ציפור" => "🐦 ציפור",
-        _       => $"🐾 {PetType}"
+        "כלב"   => "כלב",
+        "חתול"  => "חתול",
+        "זוחל"  => "זוחל",
+        "ציפור" => "ציפור",
+        _       => PetType ?? ""
     };
+
+    public Bitmap PetTypeImage => new Bitmap(AssetLoader.Open(new Uri(PetType switch
+    {
+        "כלב"   => "avares://ClinicVetSystem/Assets/dog.png",
+        "חתול"  => "avares://ClinicVetSystem/Assets/cat.png",
+        "ציפור" => "avares://ClinicVetSystem/Assets/bird.png",
+        "זוחל"  => "avares://ClinicVetSystem/Assets/reptile.png",
+        _       => "avares://ClinicVetSystem/Assets/dog.png"
+    })));
 
     public PetRow(Pet p, string ownerName)
     {

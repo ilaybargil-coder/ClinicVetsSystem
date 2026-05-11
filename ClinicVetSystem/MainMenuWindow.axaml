@@ -72,13 +72,17 @@
 
     <Grid ColumnDefinitions="280, *">
         
-        <Border Grid.Column="0" BorderBrush="#eef2f6" BorderThickness="0,0,1,0" ZIndex="10">
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
-                    <GradientStop Offset="0" Color="#ffffff"/>
-                    <GradientStop Offset="1" Color="#f0fdf4"/>
-                </LinearGradientBrush>
-            </Border.Background>
+        <Border Grid.Column="0" BorderBrush="#eef2f6" BorderThickness="0,0,1,0" ZIndex="10" ClipToBounds="True">
+            <Panel>
+                <Image Source="avares://ClinicVetSystem/Assets/sidebarnew.png" Stretch="UniformToFill"/>
+                <Border>
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                            <GradientStop Offset="0" Color="#33ffffff"/>
+                            <GradientStop Offset="1" Color="#33f0fdf4"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
 
             <Grid RowDefinitions="Auto, *, Auto">
                 <StackPanel Grid.Row="0" Margin="32,40,24,32" Spacing="4">
@@ -159,23 +163,27 @@
                     </StackPanel>
                 </StackPanel>
             </Grid>
+            </Panel>
         </Border>
 
-        <Grid Grid.Column="1" RowDefinitions="Auto, *">
-            <Grid Grid.Row="0" Height="40" Background="Transparent" PointerPressed="TitleBar_PointerPressed" ZIndex="20">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,16,0" Spacing="8">
-                    <Button Classes="chromeBtn" Click="Minimize_Click"><PathIcon Data="M20,14H4V10H20" Width="10" Height="10"/></Button>
-                    <Button Classes="chromeBtn" Click="Maximize_Click"><PathIcon Data="M4,4H20V20H4V4M6,8V18H18V8H6Z" Width="10" Height="10"/></Button>
-                    <Button Classes="chromeBtn" Click="Close_Click"><PathIcon Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Width="10" Height="10"/></Button>
-                </StackPanel>
+        <Panel Grid.Column="1">
+            <Image Source="avares://ClinicVetSystem/Assets/mainPagesBackground.png" Stretch="UniformToFill" HorizontalAlignment="Right"/>
+            <Grid RowDefinitions="Auto, *">
+                <Grid Grid.Row="0" Height="40" Background="Transparent" PointerPressed="TitleBar_PointerPressed" ZIndex="20">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,16,0" Spacing="8">
+                        <Button Classes="chromeBtn" Click="Minimize_Click"><PathIcon Data="M20,14H4V10H20" Width="10" Height="10"/></Button>
+                        <Button Classes="chromeBtn" Click="Maximize_Click"><PathIcon Data="M4,4H20V20H4V4M6,8V18H18V8H6Z" Width="10" Height="10"/></Button>
+                        <Button Classes="chromeBtn" Click="Close_Click"><PathIcon Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Width="10" Height="10"/></Button>
+                    </StackPanel>
+                </Grid>
+
+                <local:DashboardView Name="DashboardPanel" Grid.Row="1"/>
+
+                <local:CustomersView x:Name="CustomersPanel" Grid.Row="1" IsVisible="False" />
+                <local:PetsView x:Name="PetsPanel" Grid.Row="1" IsVisible="False" />
+                <ContentControl Name="MainContentRegion" Grid.Row="1" IsVisible="False"/>
+
             </Grid>
-
-            <local:DashboardView Name="DashboardPanel" Grid.Row="1"/>
-
-            <local:CustomersView x:Name="CustomersPanel" Grid.Row="1" IsVisible="False" />
-            <local:PetsView x:Name="PetsPanel" Grid.Row="1" IsVisible="False" />
-            <ContentControl Name="MainContentRegion" Grid.Row="1" IsVisible="False"/>
-
-        </Grid>
+        </Panel>
     </Grid>
 </Window>
