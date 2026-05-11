@@ -8,6 +8,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using ClinicVetsSystem.Models;
 
 namespace ClinicVetsSystem;
@@ -323,13 +325,13 @@ public partial class CalendarView : UserControl
         var fgMute = Color.FromArgb(160, fg.R, fg.G, fg.B);
         var badge  = Color.FromArgb(35,  fg.R, fg.G, fg.B);
 
-        string emoji = appt.PetType switch
+        string petImg = appt.PetType switch
         {
-            "כלב"  => "🐕",
-            "חתול" => "🐈",
-            "ציפור"=> "🐦",
-            "זוחל" => "🦎",
-            _      => "🐾"
+            "כלב"   => "avares://ClinicVetSystem/Assets/dog.png",
+            "חתול"  => "avares://ClinicVetSystem/Assets/cat.png",
+            "ציפור" => "avares://ClinicVetSystem/Assets/bird.png",
+            "זוחל"  => "avares://ClinicVetSystem/Assets/reptile.png",
+            _       => "avares://ClinicVetSystem/Assets/dog.png"
         };
 
         // Left: time
@@ -355,9 +357,11 @@ public partial class CalendarView : UserControl
             Orientation = Orientation.Horizontal, Spacing = 8,
             VerticalAlignment = VerticalAlignment.Center
         };
+        var calPetBitmap = new Bitmap(AssetLoader.Open(new Uri(petImg)));
+        nameRow.Children.Add(new Image { Source = calPetBitmap, Width = 22, Height = 22, Stretch = Stretch.Uniform, VerticalAlignment = VerticalAlignment.Center });
         nameRow.Children.Add(new TextBlock
         {
-            Text = $"{emoji} {appt.PetName}",
+            Text = appt.PetName,
             FontSize = 16, FontWeight = FontWeight.Bold,
             Foreground = new SolidColorBrush(fg),
             VerticalAlignment = VerticalAlignment.Center

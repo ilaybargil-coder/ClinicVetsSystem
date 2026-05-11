@@ -8,6 +8,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using ClinicVetsSystem.Models;
 
 namespace ClinicVetsSystem;
@@ -160,11 +162,13 @@ public partial class VisitsView : UserControl
         bool isSelected = _activeRecord?.VisitId == item.VisitId;
         bool isDone     = item.IsCompleted;
 
-        string emoji = item.PetType switch
+        string petImg = item.PetType switch
         {
-            "כלב"  => "🐕", "חתול" => "🐈",
-            "ציפור"=> "🐦", "זוחל" => "🦎",
-            _      => "🐾"
+            "כלב"   => "avares://ClinicVetSystem/Assets/dog.png",
+            "חתול"  => "avares://ClinicVetSystem/Assets/cat.png",
+            "ציפור" => "avares://ClinicVetSystem/Assets/bird.png",
+            "זוחל"  => "avares://ClinicVetSystem/Assets/reptile.png",
+            _       => "avares://ClinicVetSystem/Assets/dog.png"
         };
 
         var (badgeBg, badgeFg, badgeText) = isDone
@@ -175,13 +179,17 @@ public partial class VisitsView : UserControl
 
         // Top row: pet name + badge
         var topRow = new Grid { ColumnDefinitions = new ColumnDefinitions("*, Auto") };
-        topRow.Children.Add(new TextBlock
+        var petBitmap = new Bitmap(AssetLoader.Open(new Uri(petImg)));
+        var nameWithIcon = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center };
+        nameWithIcon.Children.Add(new Image { Source = petBitmap, Width = 22, Height = 22, Stretch = Stretch.Uniform });
+        nameWithIcon.Children.Add(new TextBlock
         {
-            Text = $"{emoji}  {item.PetName}",
+            Text = item.PetName,
             FontSize = 14, FontWeight = FontWeight.Bold,
             Foreground = new SolidColorBrush(Color.Parse("#1e293b")),
             VerticalAlignment = VerticalAlignment.Center
         });
+        topRow.Children.Add(nameWithIcon);
         var badge = new Border
         {
             Background   = new SolidColorBrush(Color.Parse(badgeBg)),
@@ -245,13 +253,15 @@ public partial class VisitsView : UserControl
         RecordPanel.IsVisible      = true;
 
         // Patient header
-        string emoji = item.PetType switch
+        string detailPetImg = item.PetType switch
         {
-            "כלב"  => "🐕", "חתול" => "🐈",
-            "ציפור"=> "🐦", "זוחל" => "🦎",
-            _      => "🐾"
+            "כלב"   => "avares://ClinicVetSystem/Assets/dog.png",
+            "חתול"  => "avares://ClinicVetSystem/Assets/cat.png",
+            "ציפור" => "avares://ClinicVetSystem/Assets/bird.png",
+            "זוחל"  => "avares://ClinicVetSystem/Assets/reptile.png",
+            _       => "avares://ClinicVetSystem/Assets/dog.png"
         };
-        lblPatientEmoji.Text   = emoji;
+        imgPatientIcon.Source = new Bitmap(AssetLoader.Open(new Uri(detailPetImg)));
         PatientAvatarBorder.Background = new SolidColorBrush(item.PetType switch
         {
             "כלב"  => Color.Parse("#f0fdf4"),

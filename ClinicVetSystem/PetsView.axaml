@@ -119,8 +119,10 @@
                                                    VerticalAlignment="Center" Foreground="#64748b" FontSize="12"/>
                                         <TextBlock Grid.Column="1" Text="{Binding Name}"
                                                    VerticalAlignment="Center" FontWeight="Bold"/>
-                                        <TextBlock Grid.Column="2" Text="{Binding PetTypeDisplay}"
-                                                   VerticalAlignment="Center"/>
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                            <Image Source="{Binding PetTypeImage}" Width="36" Height="36" Stretch="Uniform"/>
+                                            <TextBlock Text="{Binding PetTypeDisplay}" VerticalAlignment="Center"/>
+                                        </StackPanel>
                                         <TextBlock Grid.Column="3" Text="{Binding OwnerName}"
                                                    VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="4" Text="{Binding AgeDisplay}"

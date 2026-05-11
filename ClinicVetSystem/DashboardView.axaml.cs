@@ -6,6 +6,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using ClinicVetsSystem.Models;
 
 namespace ClinicVetsSystem;
@@ -25,7 +27,7 @@ public partial class DashboardView : UserControl
             // Immediate greeting so screen doesn't look empty
             var hour = DateTime.Now.Hour;
             var greet = hour < 12 ? "בוקר טוב" : hour < 17 ? "צהריים טובים" : "ערב טוב";
-            lblGreetingMain.Text = $"{greet}, {staff.Username}! 👋";
+            lblGreetingMain.Text = $"{greet}, {staff.Username}! ";
             lblTopName.Text = staff.Username;
             lblTopRole.Text = staff.Role?.ToUpper();
             lblDateLine.Text = "טוען נתונים...";
@@ -97,24 +99,38 @@ public partial class DashboardView : UserControl
 
         if (appts.Count == 0)
         {
+            var bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://ClinicVetSystem/Assets/noAppointmentimg.png")));
             DashboardAppsList.Children.Add(new Border
             {
-                Padding = new Thickness(0, 48),
+                Background = new SolidColorBrush(Color.Parse("#F8FFFE")),
+                CornerRadius = new CornerRadius(24),
+                Padding = new Thickness(48, 48, 48, 40),
+                BoxShadow = BoxShadows.Parse("0 4 24 0 #08005236"),
                 Child = new StackPanel
                 {
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    Spacing = 12,
+                    Spacing = 4,
                     Children =
                     {
+                        new Image
+                        {
+                            Source = bitmap,
+                            Width = 360,
+                            Height = 320,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Margin = new Thickness(0, 0, 0, 12)
+                        },
                         new TextBlock
                         {
-                            Text = "✅", FontSize = 52,
+                            Text = "הכל רגוע היום!",
+                            FontSize = 26, FontWeight = FontWeight.Bold,
+                            Foreground = new SolidColorBrush(Color.Parse("#1e293b")),
                             HorizontalAlignment = HorizontalAlignment.Center
                         },
                         new TextBlock
                         {
                             Text = "אין תורים מתוכננים להיום",
-                            FontSize = 16, FontWeight = FontWeight.SemiBold,
+                            FontSize = 15, FontWeight = FontWeight.Medium,
                             Foreground = new SolidColorBrush(Color.Parse("#64748b")),
                             HorizontalAlignment = HorizontalAlignment.Center
                         }
@@ -131,11 +147,13 @@ public partial class DashboardView : UserControl
     private static Border BuildApptCard(DashboardAppt appt)
     {
         bool isDone = appt.IsCompleted;
-        string emoji = appt.PetType switch
+        string petImg = appt.PetType switch
         {
-            "כלב"  => "🐕", "חתול" => "🐈",
-            "ציפור"=> "🐦", "זוחל" => "🦎",
-            _      => "🐾"
+            "כלב"   => "avares://ClinicVetSystem/Assets/dog.png",
+            "חתול"  => "avares://ClinicVetSystem/Assets/cat.png",
+            "ציפור" => "avares://ClinicVetSystem/Assets/bird.png",
+            "זוחל"  => "avares://ClinicVetSystem/Assets/reptile.png",
+            _       => "avares://ClinicVetSystem/Assets/dog.png"
         };
         var (badgeBg, badgeFg, badgeText) = isDone
             ? ("#dcfce7", "#15803d", "✓ טופל")
@@ -157,15 +175,19 @@ public partial class DashboardView : UserControl
         });
 
         // Pet avatar
+        var avatarBitmap = new Bitmap(AssetLoader.Open(new Uri(petImg)));
         var avatar = new Border
         {
             Width = 52, Height = 52, CornerRadius = new CornerRadius(28),
             Background = new SolidColorBrush(Color.Parse("#f1f5f9")),
-            Child = new TextBlock
+            ClipToBounds = true,
+            Child = new Image
             {
-                Text = emoji, FontSize = 28,
+                Source = avatarBitmap,
+                Width = 44, Height = 44,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
+                VerticalAlignment = VerticalAlignment.Center,
+                Stretch = Stretch.Uniform
             }
         };
 

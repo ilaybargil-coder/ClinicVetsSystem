@@ -153,10 +153,12 @@
                         <!-- Patient header -->
                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="20">
                             <Border Grid.Column="0" Name="PatientAvatarBorder"
-                                    Width="76" Height="76" CornerRadius="22">
-                                <TextBlock Name="lblPatientEmoji" FontSize="34"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"/>
+                                    Width="76" Height="76" CornerRadius="22" ClipToBounds="True">
+                                <Image Name="imgPatientIcon"
+                                       Width="60" Height="60"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Stretch="Uniform"/>
                             </Border>
                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
                                 <TextBlock Name="lblPatientName"

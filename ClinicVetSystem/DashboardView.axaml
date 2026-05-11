@@ -31,9 +31,11 @@
                     </StackPanel>
                     <Border Width="48" Height="48" CornerRadius="24" Background="#1e293b"
                             BorderBrush="White" BorderThickness="2"
-                            BoxShadow="0 4 12 0 #20000000">
-                        <TextBlock Text="👩‍⚕️" HorizontalAlignment="Center"
-                                   VerticalAlignment="Center" FontSize="24"/>
+                            BoxShadow="0 4 12 0 #20000000" ClipToBounds="True">
+                        <Image Source="avares://ClinicVetSystem/Assets/doctoricon.png"
+                               Stretch="UniformToFill"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
                     </Border>
                 </StackPanel>
             </Grid>
