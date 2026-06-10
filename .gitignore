@@ -2,5 +2,6 @@ bin/
 obj/
 /packages/
 riderModule.iml
-/_ReSharper.Caches/.DS_Store
+/_ReSharper.Caches/
+.DS_Store
 .claude/worktrees/
