@@ -359,6 +359,8 @@ public partial class VisitsView : UserControl
     private Border BuildMedRow(Medication med)
     {
         bool selected = _selectedMedIds.Contains(med.Id);
+        // תרופה שאזלה (מלאי 0) אי אפשר לרשום; אם כבר רשומה בביקור — מותר רק להסיר
+        bool outOfStock = med.Stock == 0 && !selected;
 
         var checkBox = new Border
         {
@@ -387,8 +389,24 @@ public partial class VisitsView : UserControl
             Foreground = new SolidColorBrush(selected ? Color.Parse("#006c49") : Color.Parse("#1e293b")),
             VerticalAlignment = VerticalAlignment.Center
         };
-        Grid.SetColumn(nameBlock, 1);
-        row.Children.Add(nameBlock);
+
+        var namePanel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center };
+        namePanel.Children.Add(nameBlock);
+        if (outOfStock)
+            namePanel.Children.Add(new Border
+            {
+                Background   = new SolidColorBrush(Color.Parse("#fee2e2")),
+                CornerRadius = new CornerRadius(8),
+                Padding      = new Thickness(8, 2),
+                VerticalAlignment = VerticalAlignment.Center,
+                Child = new TextBlock
+                {
+                    Text = "אזל מהמלאי", FontSize = 11, FontWeight = FontWeight.SemiBold,
+                    Foreground = new SolidColorBrush(Color.Parse("#dc2626"))
+                }
+            });
+        Grid.SetColumn(namePanel, 1);
+        row.Children.Add(namePanel);
 
         var priceBlock = new TextBlock
         {
@@ -405,7 +423,8 @@ public partial class VisitsView : UserControl
             Background   = new SolidColorBrush(selected ? Color.Parse("#f0fdf4") : Color.Parse("#f8fafc")),
             CornerRadius = new CornerRadius(14),
             Padding      = new Thickness(16, 12),
-            Cursor       = new Cursor(StandardCursorType.Hand),
+            Cursor       = new Cursor(outOfStock ? StandardCursorType.Arrow : StandardCursorType.Hand),
+            Opacity      = outOfStock ? 0.55 : 1.0,
             Child        = row
         };
 
@@ -417,7 +436,11 @@ public partial class VisitsView : UserControl
                 if (_selectedMedIds.Contains(medId))
                     _selectedMedIds.Remove(medId);
                 else
+                {
+                    if (_allMeds.FirstOrDefault(m => m.Id == medId)?.Stock == 0)
+                        return; // אזל מהמלאי — אי אפשר לרשום
                     _selectedMedIds.Add(medId);
+                }
 
                 RenderMedicationsPanel();
                 UpdateCostDisplay();

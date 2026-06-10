@@ -398,9 +398,11 @@ public partial class InventoryView : UserControl
             MedOverlay.IsVisible = false;
             await LoadDataAsync();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            ShowMedError("שגיאה בשמירה, נסה שוב.");
+            ShowMedError(ex.Message.Contains("duplicate") || ex.Message.Contains("23505")
+                ? $"תרופה בשם \"{name}\" כבר קיימת במלאי. ערוך את הקיימת או בחר שם אחר."
+                : "שגיאה בשמירה, נסה שוב.");
         }
         finally
         {
