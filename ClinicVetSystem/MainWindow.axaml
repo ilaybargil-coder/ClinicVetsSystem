@@ -5,7 +5,6 @@
         Width="1200" Height="800"
         MinWidth="900" MinHeight="650"
         WindowStartupLocation="CenterScreen"
-        Background="#f7f9fb"
         FontFamily="Inter, sans-serif"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="NoChrome"
@@ -71,7 +70,12 @@
         </Style>
     </Window.Styles>
 
+    <Panel>
+        <Image Source="avares://ClinicVetSystem/Assets/backgroundVETS.png"
+               Stretch="UniformToFill"/>
+
     <Grid RowDefinitions="Auto, *">
+
         <Grid Grid.Row="0" Height="40" Background="Transparent" PointerPressed="TitleBar_PointerPressed" ZIndex="20">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,4,8,0" Spacing="4">
                 <Button Classes="chromeBtn" Click="Minimize_Click"><PathIcon Data="M20,14H4V10H20" Width="12" Height="12"/></Button>
@@ -81,12 +85,12 @@
         </Grid>
 
         <Grid Grid.Row="1" Margin="20" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Border MaxWidth="1000" Width="1000" MinHeight="680" Height="680" 
-                    CornerRadius="32" Background="#ffffff" ClipToBounds="True" BoxShadow="0 24 48 0 #0F005236">
+            <Border MaxWidth="1000" Width="1000" MinHeight="680" Height="680"
+                    CornerRadius="32" Background="Transparent" ClipToBounds="True" BoxShadow="0 24 64 0 #30005236, 0 4 16 0 #18005236">
                 
                 <Grid x:Name="ContainerGrid" ColumnDefinitions="*,*" SizeChanged="ContainerGrid_SizeChanged">
                     
-                    <Panel x:Name="LeftPanel" Grid.Column="0" Background="#ffffff">
+                    <Panel x:Name="LeftPanel" Grid.Column="0" Background="Transparent">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <StackPanel Margin="48,32" MaxWidth="380" HorizontalAlignment="Center">
                                 <TextBlock Text="Register Staff" FontSize="32" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
@@ -149,7 +153,7 @@
                         </ScrollViewer>
                     </Panel>
 
-                    <Panel x:Name="RightPanel" Grid.Column="1" Background="#ffffff">
+                    <Panel x:Name="RightPanel" Grid.Column="1" Background="#E8ffffff">
                         <StackPanel Margin="48,80" MaxWidth="380" HorizontalAlignment="Center" VerticalAlignment="Center">
                             
                             <TextBlock Text="Welcome Back" FontSize="36" FontWeight="Bold" Foreground="#191c1e" Margin="0,0,0,8"/>
@@ -309,4 +313,5 @@
             </Border>
         </Grid>
     </Grid>
+    </Panel>
 </Window>

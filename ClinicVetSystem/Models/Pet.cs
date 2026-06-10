@@ -35,6 +35,7 @@ public class Pet : BaseModel
     public DateTime? CreatedAt { get; set; }
 
     // מאפיין עזר להתראה (לא נשמר ב-DB)
+    [Newtonsoft.Json.JsonIgnore]
     public bool NeedsVaccine => LastVaccineDate == null ||
         (DateTime.Now - LastVaccineDate.Value.ToDateTime(TimeOnly.MinValue)).TotalDays > 365;
 }

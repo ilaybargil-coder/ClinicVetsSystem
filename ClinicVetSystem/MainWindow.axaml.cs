@@ -172,7 +172,8 @@ public partial class MainWindow : Window
                 Username = username,
                 Password = password,
                 Email = email,
-                Role = role
+                Role = role,
+                NationalId = id
             };
             
             _otpMode = "Register";

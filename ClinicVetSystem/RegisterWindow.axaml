@@ -5,7 +5,7 @@
         Width="1200" Height="800"
         MinWidth="800" MinHeight="600"
         WindowStartupLocation="CenterScreen"
-        Background="#f7f9fb"
+        Background="Transparent"
         FontFamily="Inter, sans-serif"
         
         ExtendClientAreaToDecorationsHint="True"
@@ -99,6 +99,10 @@
         </Style>
     </Window.Styles>
 
+    <Panel>
+        <Image Source="avares://ClinicVetSystem/Assets/backgroundVETS.png"
+               Stretch="UniformToFill"/>
+
     <Grid RowDefinitions="Auto, *">
         
         <Grid Grid.Row="0" Height="40" Background="Transparent" PointerPressed="TitleBar_PointerPressed" ZIndex="10">
@@ -118,20 +122,20 @@
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <Grid Margin="20" HorizontalAlignment="Center" VerticalAlignment="Center">
                 
-                <Border MaxWidth="1100" MinHeight="680" 
-                        CornerRadius="32" 
-                        Background="White"
+                <Border MaxWidth="1100" MinHeight="680"
+                        CornerRadius="32"
+                        Background="Transparent"
                         ClipToBounds="True"
                         BoxShadow="0 24 48 0 #0F005236">
                     
                     <Grid ColumnDefinitions="*,*">
-                        
+
                         <Panel Grid.Column="0">
                             <Border>
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-                                        <GradientStop Offset="0" Color="#006c49"/>
-                                        <GradientStop Offset="1" Color="#005236"/>
+                                        <GradientStop Offset="0" Color="#CC006c49"/>
+                                        <GradientStop Offset="1" Color="#CC005236"/>
                                     </LinearGradientBrush>
                                 </Border.Background>
                             </Border>
@@ -165,7 +169,7 @@
                             </Grid>
                         </Panel>
 
-                        <Panel Grid.Column="1" Background="#66ffffff">
+                        <Panel Grid.Column="1" Background="#CCffffff">
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                 <StackPanel Margin="48,40">
                                     
@@ -262,4 +266,5 @@
             </Grid>
         </ScrollViewer>
     </Grid>
+    </Panel>
 </Window>

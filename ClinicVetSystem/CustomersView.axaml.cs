@@ -306,9 +306,10 @@ public partial class CustomersView : UserControl
         var name    = txtAddPetName.Text?.Trim() ?? "";
         var typeStr = cbAddPetType.SelectedItem?.ToString() ?? "";
 
-        if (string.IsNullOrEmpty(name))
+        // שם — אותיות בלבד (כמו במסך ניהול חיות)
+        if (string.IsNullOrEmpty(name) || !Regex.IsMatch(name, @"^[\u0590-\u05FFa-zA-Z\s]+$"))
         {
-            ShowAddPetError("שם החיה הוא שדה חובה.");
+            ShowAddPetError("שם החיה חייב להכיל אותיות בלבד.");
             return;
         }
         if (string.IsNullOrEmpty(typeStr))
@@ -317,15 +318,58 @@ public partial class CustomersView : UserControl
             return;
         }
 
-        decimal.TryParse(txtAddPetWeight.Text, out var weight);
+        // משקל — מספר עשרוני בין 0.1 ל-100
+        if (!decimal.TryParse(txtAddPetWeight.Text?.Replace(',', '.'),
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out var weight)
+            || weight < 0.1m || weight > 100m)
+        {
+            ShowAddPetError("המשקל חייב להיות מספר עשרוני בין 0.1 ל-100 ק\"ג.");
+            return;
+        }
 
-        var birthDate = dpAddPetBirth.SelectedDate.HasValue
-            ? DateOnly.FromDateTime(dpAddPetBirth.SelectedDate.Value.DateTime)
-            : DateOnly.FromDateTime(DateTime.Today);
+        // תאריך לידה — חובה, לא עתידי, לא לפני 2000
+        if (!dpAddPetBirth.SelectedDate.HasValue)
+        {
+            ShowAddPetError("יש לבחור תאריך לידה.");
+            return;
+        }
+        var birthDate = DateOnly.FromDateTime(dpAddPetBirth.SelectedDate.Value.DateTime);
+        if (birthDate > DateOnly.FromDateTime(DateTime.Today))
+        {
+            ShowAddPetError("תאריך לידה לא יכול להיות תאריך עתידי.");
+            return;
+        }
+        if (birthDate.Year < 2000)
+        {
+            ShowAddPetError("תאריך לידה לא יכול להיות לפני שנת 2000.");
+            return;
+        }
 
-        var vaccineDate = dpAddPetVaccine.SelectedDate.HasValue
-            ? (DateOnly?)DateOnly.FromDateTime(dpAddPetVaccine.SelectedDate.Value.DateTime)
-            : null;
+        // תאריך חיסון — אופציונלי, אך לא עתידי
+        DateOnly? vaccineDate = null;
+        if (dpAddPetVaccine.SelectedDate.HasValue)
+        {
+            var vd = DateOnly.FromDateTime(dpAddPetVaccine.SelectedDate.Value.DateTime);
+            if (vd > DateOnly.FromDateTime(DateTime.Today))
+            {
+                ShowAddPetError("תאריך חיסון לא יכול להיות תאריך עתידי.");
+                return;
+            }
+            vaccineDate = vd;
+        }
+
+        // שבב — אופציונלי, אך בדיוק 15 ספרות אם הוזן
+        string? chip = null;
+        if (!string.IsNullOrWhiteSpace(txtAddPetChip.Text))
+        {
+            chip = txtAddPetChip.Text.Trim();
+            if (!Regex.IsMatch(chip, @"^\d{15}$"))
+            {
+                ShowAddPetError("מספר שבב חייב להכיל בדיוק 15 ספרות.");
+                return;
+            }
+        }
 
         var pet = new Pet
         {
@@ -335,7 +379,7 @@ public partial class CustomersView : UserControl
             Weight        = weight,
             BirthDate     = birthDate,
             LastVaccineDate = vaccineDate,
-            ChipNumber    = string.IsNullOrWhiteSpace(txtAddPetChip.Text) ? null : txtAddPetChip.Text
+            ChipNumber    = chip
         };
 
         try
