@@ -220,29 +220,18 @@ public partial class PetsView : UserControl
                 { ShowError("מספר שבב חייב להכיל בדיוק 15 ספרות."); return; }
             }
 
+            // עדכון/הוספה דרך מודל מלא — Set() עם null (שבב/חיסון ריקים) מפיל את postgrest
+            var pet = new Pet
+            {
+                Id = _editingPetId, Name = name, PetType = petType, Weight = weight,
+                BirthDate = birthDate, OwnerId = owner.Id,
+                LastVaccineDate = vaccineDate, ChipNumber = chip
+            };
+
             if (_isEditMode)
-            {
-                await SupabaseService.Client!.From<Pet>()
-                    .Where(x => x.Id == _editingPetId)
-                    .Set(x => x.Name!,           name)
-                    .Set(x => x.PetType!,        petType)
-                    .Set(x => x.Weight,          weight)
-                    .Set(x => x.BirthDate,       birthDate)
-                    .Set(x => x.OwnerId!,        owner.Id)
-                    .Set(x => x.LastVaccineDate, vaccineDate)
-                    .Set(x => x.ChipNumber,      chip)
-                    .Update();
-            }
+                await SupabaseService.Client!.From<Pet>().Update(pet);
             else
-            {
-                var pet = new Pet
-                {
-                    Name = name, PetType = petType, Weight = weight,
-                    BirthDate = birthDate, OwnerId = owner.Id,
-                    LastVaccineDate = vaccineDate, ChipNumber = chip
-                };
                 await SupabaseService.Client!.From<Pet>().Insert(pet);
-            }
 
             ModalOverlay.IsVisible = false;
             await LoadDataAsync();

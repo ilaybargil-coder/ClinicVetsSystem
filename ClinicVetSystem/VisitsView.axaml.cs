@@ -485,6 +485,11 @@ public partial class VisitsView : UserControl
                 .Update();
 
             // 2. Replace visit medications
+            var prevMedsResp = await client.From<VisitMedication>()
+                .Where(vm => vm.VisitId == _activeRecord.VisitId)
+                .Get();
+            var prevMedIds = new HashSet<int>(prevMedsResp.Models.Select(vm => vm.MedicationId));
+
             await client.From<VisitMedication>()
                 .Where(vm => vm.VisitId == _activeRecord.VisitId)
                 .Delete();
@@ -495,6 +500,12 @@ public partial class VisitsView : UserControl
                     VisitId      = _activeRecord.VisitId,
                     MedicationId = medId
                 });
+
+            // 3. Adjust stock: -1 for newly prescribed meds, +1 back for removed ones
+            foreach (var medId in _selectedMedIds.Except(prevMedIds))
+                await AdjustMedStock(medId, -1);
+            foreach (var medId in prevMedIds.Except(_selectedMedIds))
+                await AdjustMedStock(medId, +1);
 
             ShowSaveStatus("✓ הרשומה נשמרה בהצלחה", true);
             await LoadDataAsync();
@@ -512,6 +523,19 @@ public partial class VisitsView : UserControl
         {
             btnSaveRecord.IsEnabled = true;
         }
+    }
+
+    private async Task AdjustMedStock(int medId, int delta)
+    {
+        var med = _allMeds.FirstOrDefault(m => m.Id == medId);
+        if (med?.Stock == null) return;
+
+        int newStock = Math.Max(0, med.Stock.Value + delta);
+        await SupabaseService.Client!.From<Medication>()
+            .Where(m => m.Id == medId)
+            .Set(m => m.Stock, (int?)newStock)
+            .Update();
+        med.Stock = newStock;
     }
 
     private void ShowSaveStatus(string msg, bool? isSuccess)

@@ -26,6 +26,9 @@ public class Staff : BaseModel
     [Column("role")]
     public string? Role { get; set; }
 
+    [Column("national_id")]
+    public string? NationalId { get; set; }
+
     [Column("created_at")]
     public DateTime? CreatedAt { get; set; }
 }
